@@ -74,11 +74,7 @@ means_pooler <- function(grouping, group, domain) {
     results <- with(pvlist, lm(PV_w9 - PV_w3 ~ 1)) %>%
       MIcombine() %>%
       summary()
-    
-    res.
-    
-    results_partial <- with(PV)
-    
+
     
   # Computing sds using the full sample
     sds <- get(domain) %>%
@@ -205,36 +201,47 @@ rci_pooler <- function(grouping, group, domain) {
   data <- get(domain) %>%
     filter(!is.na(PV_w9) & !is.na(PV_w3))
   
-  # Compute the SD at T1 in the full sammple
+  # Compute the SD of the competence at T1 in the full sample (not subgroup)
+  
   sds <- data %>% 
     group_by(.imp) %>% 
     summarise(t1 = sd(PV_w3)) %>% 
     summarise(across(everything(), mean))
   
-  # Define function to compute RCI
+  # Define generic function to compute RCI, using the correlation between the
+  # two measurement occasions as the reliability / stability measure
+  # Three indices are computed: 
+  # (1) the raw RCI (akin to an effect size measure of change per individual, 
+  # (2) upward change > 1.96 SDdiff or not, 
+  # (3) downward change smaller than 1.96 SDdiff or not)
+  # Note: RCI is subgroup-specific but rxx and SDt1 are from the full sample
   rci <- function(data) {
-    data <- data %>% #group_by(.imp) %>%
+    data <- data %>% 
+      filter(.data[[grouping]] == {{ group }}) %>%
       mutate(rci_raw = .data$PV_w9 - .data$PV_w3 /
-               (sqrt(2*sds$t1 * sqrt((1 - rxx)^2))),
+                       (sqrt(2*(sds$t1 * sqrt((1 - rxx)^2)))),
              rci_up = .data$rci_raw > 1.96,
              rci_down = .data$rci_raw < -1.96
       )
     data
   }
   
-  # Add RCIs to each dataset in PV list
+  # Generate list of data sets containing the plausible values (PVs)
   pvlist <- data %>%
-    filter(.data[[grouping]] == {{ group }}) %>%
-    split(.$.imp) 
+   split(.$.imp) 
   
-  sink("NUL")  
-  # Compute rxx 
+  
+  # Compute rxx, the correlation between competences at both time points for the
+  # full sample
   rxx <- with(imputationList(pvlist), 
               lm(scale(PV_w9) ~ scale(PV_w3) )) %>%
     MIcombine() %>%
     summary() %>% 
     pluck("results", 2)
   
+  # Add the RCI variables to each dataset in the list of datasets containing PVs
+  sink("NUL")  
+ 
   pvlist <- pvlist %>%
     map(rci) %>%
     map(~select(., rci_raw, rci_up, rci_down))
@@ -274,7 +281,7 @@ rcis <- rcis %>%
   rowwise() %>%
   mutate(ergebnis = list(rci_pooler(grouping, group, domain))) %>%
   unnest(ergebnis)
-rcis
+
 rcis 
 
 
