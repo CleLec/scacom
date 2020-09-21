@@ -10,7 +10,7 @@ rm(list = ls())
 # List of subdirectories
 dirs <- list(
   main = "D:/Dropbox/Forschung und Lehre/Stability_PIAAC_NEPS"
-  #results = "./02_results_new"
+  # results = "./02_results_new"
 )
 
 setwd(dirs$main)
@@ -37,11 +37,11 @@ pckloader(c(
 # Load data containing the previously estimated plausible values (PVs)
 # and add new column "total" (needed only for simplified computation inside the
 # functions defined next)
-load("math.Rda") 
-load("reading.Rda") 
+load("math.Rda")
+load("reading.Rda")
 
-reading <- reading %>% mutate(total = 1) 
-math <- math %>% mutate(total = 1) 
+reading <- reading %>% mutate(total = 1)
+math <- math %>% mutate(total = 1)
 
 # Analyzing mean-level change in competences ------------------------------
 
@@ -70,22 +70,23 @@ means_pooler <- function(grouping, group, domain) {
     imputationList()
 
   if (exists > 0) {
-  
     results <- with(pvlist, lm(PV_w9 - PV_w3 ~ 1)) %>%
       MIcombine() %>%
       summary()
 
-    
-  # Computing sds using the full sample
+
+    # Computing sds using the full sample
     sds <- get(domain) %>%
-      filter(!is.na(PV_w9) & !is.na(PV_w3)) %>% 
-      group_by(.imp) %>% 
-      summarise(pooled = 0.5*(sd(PV_w3) + sd(PV_w9)),
-                delta = sd(PV_w9 - PV_w3)) %>% 
+      filter(!is.na(PV_w9) & !is.na(PV_w3)) %>%
+      group_by(.imp) %>%
+      summarise(
+        pooled = 0.5 * (sd(PV_w3) + sd(PV_w9)),
+        delta = sd(PV_w9 - PV_w3)
+      ) %>%
       summarise(across(everything(), mean))
-    
+
     sink()
-  # Extracting results in tidy format 
+    # Extracting results in tidy format
     resultlist <- tibble(
       diff = results[["results"]],
       se = results[["se"]],
@@ -117,7 +118,7 @@ deltas <- deltas %>%
   mutate(ergebnis = list(means_pooler(grouping, group, domain))) %>%
   unnest(ergebnis)
 
-deltas 
+deltas
 # Add information for the total sample
 
 # Equivalently,
@@ -159,8 +160,8 @@ cors_pooler <- function(grouping, group, domain) {
     results <- with(pvlist, lm(scale(PV_w9) ~ scale(PV_w3))) %>%
       MIcombine() %>%
       summary()
-   
-    
+
+
     sink()
 
     resultlist <- tibble(
@@ -200,68 +201,72 @@ cors
 rci_pooler <- function(grouping, group, domain) {
   data <- get(domain) %>%
     filter(!is.na(PV_w9) & !is.na(PV_w3))
-  
+
   # Compute the SD of the competence at T1 in the full sample (not subgroup)
-  
-  sds <- data %>% 
-    group_by(.imp) %>% 
-    summarise(t1 = sd(PV_w3)) %>% 
+
+  sds <- data %>%
+    group_by(.imp) %>%
+    summarise(t1 = sd(PV_w3)) %>%
     summarise(across(everything(), mean))
-  
+
   # Define generic function to compute RCI, using the correlation between the
   # two measurement occasions as the reliability / stability measure
-  # Three indices are computed: 
-  # (1) the raw RCI (akin to an effect size measure of change per individual, 
-  # (2) upward change > 1.96 SDdiff or not, 
+  # Three indices are computed:
+  # (1) the raw RCI (akin to an effect size measure of change per individual,
+  # (2) upward change > 1.96 SDdiff or not,
   # (3) downward change smaller than 1.96 SDdiff or not)
   # Note: RCI is subgroup-specific but rxx and SDt1 are from the full sample
   rci <- function(data) {
-    data <- data %>% 
+    data <- data %>%
       filter(.data[[grouping]] == {{ group }}) %>%
-      mutate(rci_raw = .data$PV_w9 - .data$PV_w3 /
-                       (sqrt(2*(sds$t1 * sqrt((1 - rxx)^2)))),
-             rci_up = .data$rci_raw > 1.96,
-             rci_down = .data$rci_raw < -1.96
+      mutate(
+        rci_raw = .data$PV_w9 - .data$PV_w3 /
+          (sqrt(2 * (sds$t1 * sqrt((1 - rxx)^2)))),
+        rci_up = .data$rci_raw > 1.96,
+        rci_down = .data$rci_raw < -1.96
       )
     data
   }
-  
+
   # Generate list of data sets containing the plausible values (PVs)
   pvlist <- data %>%
-   split(.$.imp) 
-  
-  
+    split(.$.imp)
+
+
   # Compute rxx, the correlation between competences at both time points for the
   # full sample
-  rxx <- with(imputationList(pvlist), 
-              lm(scale(PV_w9) ~ scale(PV_w3) )) %>%
+  rxx <- with(
+    imputationList(pvlist),
+    lm(scale(PV_w9) ~ scale(PV_w3))
+  ) %>%
     MIcombine() %>%
-    summary() %>% 
+    summary() %>%
     pluck("results", 2)
-  
+
   # Add the RCI variables to each dataset in the list of datasets containing PVs
-  sink("NUL")  
- 
+  sink("NUL")
+
   pvlist <- pvlist %>%
     map(rci) %>%
-    map(~select(., rci_raw, rci_up, rci_down))
+    map(~ select(., rci_raw, rci_up, rci_down))
+
   
   results <- tibble(
-    raw = with(imputationList(pvlist), lm(rci_raw ~ 1)) %>% 
-      MIcombine %>%
-      summary() %>% 
+    raw = with(imputationList(pvlist), lm(rci_raw ~ 1)) %>%
+      MIcombine() %>%
+      summary() %>%
       pluck("results", 1),
-    up =  with(imputationList(pvlist), lm(rci_up ~ 1)) %>% 
-      MIcombine %>%
-      summary() %>% 
+    up = with(imputationList(pvlist), lm(rci_up ~ 1)) %>%
+      MIcombine() %>%
+      summary() %>%
       pluck("results", 1) * 100,
-    down =  with(imputationList(pvlist), lm(rci_down ~ 1)) %>% 
-      MIcombine %>%
-      summary() %>% 
+    down = with(imputationList(pvlist), lm(rci_down ~ 1)) %>%
+      MIcombine() %>%
+      summary() %>%
       pluck("results", 1) * 100
   )
   sink()
-  
+
   results
 }
 
@@ -272,8 +277,8 @@ rcis <- expand_grid(
   group = c(0:3)
 ) %>%
   filter(!(grouping == "gender" & group %in% c(0, 3)) &
-           !(grouping == "edugr" & group == 3) &
-           !(grouping == "total" & group != 1)) %>%
+    !(grouping == "edugr" & group == 3) &
+    !(grouping == "total" & group != 1)) %>%
   arrange(desc(domain), desc(grouping), group)
 
 # Map the function to the tibble to obtain the results
@@ -282,7 +287,7 @@ rcis <- rcis %>%
   mutate(ergebnis = list(rci_pooler(grouping, group, domain))) %>%
   unnest(ergebnis)
 
-rcis 
+rcis
 
 
 

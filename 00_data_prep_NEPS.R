@@ -66,7 +66,7 @@ data_books <- data_ptarget %>%
   select(ID_t, wave, t34005a) %>%
   arrange(ID_t, wave) %>%
   group_by(ID_t) %>%
-  filter(t34005a != -54) %>%
+  filter(t34005a %in% c(1:6)) %>%
   summarize(books = first(t34005a)) %>%
   ungroup() %>%
   mutate(books = if_else(books > 3, 1, 0))
@@ -126,7 +126,7 @@ read_pvs <- plausible_values(
     data_merged,
     ID_t, age, age2, age3, gender,
     edugr, language, hhsize, books,
-    math3, math9, science, ict,
+    math3,  science, ict, #math9,
     gf, cumemp, fases
   ),
   npv = 20,
@@ -149,7 +149,7 @@ math_pvs <- plausible_values(
     data_merged,
     ID_t, age, age2, age3, gender,
     edugr, language, hhsize, books,
-    read3, read9, science, ict,
+    read3, science, ict, # read9, 
     gf, cumemp, fases
   ),
   npv = 20,
