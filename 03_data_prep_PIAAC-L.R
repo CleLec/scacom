@@ -75,7 +75,7 @@ rm(list = c("piaac12", "piaacl15", "weights15"))
 # - literacy and numeracy are separate files
 
 # Create reshaped reading data
-reading <- piaacl %>%
+reading_piaac <- piaacl %>%
   select(-starts_with("PVNUM")) %>%
   pivot_longer(
     cols = matches("PVLIT.+_1._15"),
@@ -88,10 +88,11 @@ reading <- piaacl %>%
     names_from = c("year"),
     names_prefix = "pv"
   ) %>%
-  relocate(.imp, before =  seqid)
+  relocate(.imp, before =  seqid) %>%
+  mutate(total = 1) #needed for selecting all observations in the analyses
 
 # Create reshaped math data
-math <- piaacl %>%
+math_piaac <- piaacl %>%
   select(-starts_with("PVLIT")) %>%
   pivot_longer(
     cols = matches("PVNUM.+_1._15"),
@@ -104,9 +105,10 @@ math <- piaacl %>%
     names_from = c("year"),
     names_prefix = "pv"
   )%>%
-  relocate(.imp, before = seqid)
+  relocate(.imp, before = seqid) %>%
+  mutate(total = 1) #needed for selecting all observations in the analyses
 
 
 # Save the new data in .Rdata ---------------------------------------------
-save(reading, file = "reading_piaac.Rda")
-save(math, file = "math_piaac.Rda")
+save(reading_piaac, file = "reading_piaac.Rda")
+save(math_piaac, file = "math_piaac.Rda")

@@ -178,7 +178,7 @@ read_eaps %>%
 
 # Prepare data  -----------------------------------------------------
 
-reading <- read_pvs %>%
+reading_neps <- read_pvs %>%
   get_pv_list() %>%
   enframe(x = ., name = ".imp") %>%
   unnest(., value) %>%
@@ -192,9 +192,10 @@ reading <- read_pvs %>%
     ),
     total = 1 #needed for selecting all observations in subsequent analysis 
   ) %>%
-  rename(t1_pv = PV_w3, t2_pv = PV_w9)
+  rename(t1_pv = PV_w3, t2_pv = PV_w9) %>%
+  filter(!is.na(t1_pv) & !is.na(t2_pv)) # drop incomplete respondents
 
-math <- math_pvs %>%
+math_neps <- math_pvs %>%
   get_pv_list() %>%
   enframe(x = ., name = ".imp") %>%
   unnest(., value) %>%
@@ -208,9 +209,10 @@ math <- math_pvs %>%
     ),
     total = 1 #needed for selecting all observations in subsequent analysis 
   ) %>%
-  rename(t1_pv = PV_w3, t2_pv = PV_w9)
+  rename(t1_pv = PV_w3, t2_pv = PV_w9) %>% # drop incomplete respondents
+  filter(!is.na(t1_pv) & !is.na(t2_pv))
 
 
 # Save the PV files
-save(math, file = "math_neps.Rda")
-save(reading, file = "reading_neps.Rda")
+save(math_neps, file = "math_neps.Rda")
+save(reading_neps, file = "reading_neps.Rda")
