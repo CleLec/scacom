@@ -60,11 +60,13 @@ weights15 <- read_spss(glue(
 piaacl <- piaac12 %>%
   left_join(., piaacl15, by = "seqid") %>%
   left_join(., weights15, by = "seqid") %>%
-  filter(!is.na(PVLIT1_12_15) & !is.na(PVLIT1_15_15))  %>%
+  filter(!is.na(PVLIT1_12_15) & !is.na(PVLIT1_15_15) &
+           age >= 18)  %>%
   mutate(weight = weight12 * bleib_15,
-         agegr = if_else(age < 35, 0,
-                         if_else(age >= 35 & age < 45, 1,
-                                 if_else(age >= 45 & age < 55, 2, 3))),
+         agegr = if_else(age <= 34, 0,
+                         if_else(age > 34 & age <= 44, 1,
+                                 if_else(age > 44 & age <= 54, 2, 3)
+                         )),
          edugr = ifelse(edu %in% c(1:6), 0,
                         ifelse(edu %in% c(7:11), 1,
                                 ifelse(edu %in% c(12:14), 2, NA))))
@@ -85,10 +87,10 @@ reading_piaac <- piaacl %>%
   ) %>%
   pivot_wider(.,
     values_from = c("score"),
-    names_from = c("year"),
-    names_prefix = "pv"
+    names_from = c("year")
   ) %>%
   relocate(.imp, before =  seqid) %>%
+  rename(t1_pv = '12', t2_pv = '15') %>%
   mutate(total = 1) #needed for selecting all observations in the analyses
 
 # Create reshaped math data
@@ -102,10 +104,10 @@ math_piaac <- piaacl %>%
   ) %>%
   pivot_wider(.,
     values_from = c("score"),
-    names_from = c("year"),
-    names_prefix = "pv"
-  )%>%
+    names_from = c("year")
+  ) %>%
   relocate(.imp, before = seqid) %>%
+  rename(t1_pv = '12', t2_pv = '15') %>%
   mutate(total = 1) #needed for selecting all observations in the analyses
 
 
