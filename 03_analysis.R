@@ -35,53 +35,48 @@ map(c("math_neps.Rda", "reading_neps.Rda",
 # Write a function that computes difference scores for a given group in the
 # pools the results across the PVs (imputations) and saves everything including
 
-means_pooler <- function(grouping, group, target) {
+deltas_pooler <- function(grouping, group, target) {
+
+  # Get the target data (defined by study and competence domain) 
+  # from the global environment
   data <- get(target) %>%
-    filter(!is.na(PV_w9) & !is.na(PV_w3))
+    filter(!is.na(t2_pv) & !is.na(t1_pv))
+
+  # Switch off messages from mitools
+ sink("NUL")
   
-  exists <- data %>%
-    filter(.data[[grouping]] == {{ group }}) %>%
-    nrow()
-  
-  cat(paste0(
-    "\nGroup ", grouping, " = ", group, " has ",
-    exists / n_distinct(data$.imp),
-    " cases for the target of ", target
-  ))
-  sink("NUL")
+  # Reshape data from long format to mitools-style imputation list
   pvlist <- data %>%
     filter(.data[[grouping]] == {{ group }}) %>%
     split(.$.imp) %>%
     imputationList()
   
-  if (exists > 0) {
-    results <- with(pvlist, lm(PV_w9 - PV_w3 ~ 1)) %>%
-      MIcombine() %>%
-      summary()
-    
-    # Computing sds using the full sample
+  # Perform analysis of mean-level change and pool it
+   deltas <- with(pvlist, lm(t2_pv - t1_pv ~ 1)) %>%
+   MIcombine() %>%
+   summary()
+  
+   # Compute pooled SDs in the full sample
     sds <- get(target) %>%
-      filter(!is.na(PV_w9) & !is.na(PV_w3)) %>%
       group_by(.imp) %>%
       summarise(
-        pooled = 0.5 * (sd(PV_w3) + sd(PV_w9)),
-        delta = sd(PV_w9 - PV_w3)
+        pooled = 0.5 * (sd(t1_pv) + sd(t2_pv)),
+        delta = sd(t2_pv - t1_pv)
       ) %>%
-      summarise(across(everything(), mean))
+      summarise(across(where(is.numeric), mean))
     
-    sink()
-    # Extracting results in tidy format
-    resultlist <- tibble(
-      diff = results[["results"]],
-      se = results[["se"]],
-      lower = results[["(lower"]],
-      upper = results[["upper)"]],
-      d_z = diff / sds$delta,
-      d_av = diff / sds$pooled
+  sink()
+    
+    # Extract results in tidy format
+     resultlist <- tibble(
+       diff = deltas[["results"]], # T2-T1 difference score
+       se = deltas[["se"]], # SE of the difference score
+       lower = deltas[["(lower"]], # lower bound of difference score
+       upper = deltas[["upper)"]], # upper bound
+       d_z = diff / sds$delta, # Cohen's d_z
+       d_av = diff / sds$pooled # Cohens's d_av
     )
-  } else {
-    resultlist <- "Non-existent (sub-)group"
-  }
+
   resultlist
 }
 
@@ -99,8 +94,10 @@ deltas <- expand_grid(
 # Map the function to the tibble to obtain the results
 deltas <- deltas %>%
   rowwise() %>%
-  mutate(ergebnis = list(means_pooler(grouping, group, target))) %>%
-  unnest(ergebnis)
+  mutate(results = list(deltas_pooler(grouping, group, target))) %>%
+  unnest(results) %>%
+  mutate(domain = str_extract(target, pattern = "reading|math"),
+         study = str_extract(target, pattern = "neps|piaac")) 
 
 deltas
 # Add information for the total sample
@@ -120,8 +117,9 @@ deltas
 # pools the results across the PVs (imputations) and saves everything including
 
 cors_pooler <- function(grouping, group, target) {
+  
   data <- get(target) %>%
-    filter(!is.na(PV_w9) & !is.na(PV_w3))
+    filter(!is.na(t2_pv) & !is.na(t1_pv))
   
   exists <- data %>%
     filter(.data[[grouping]] == {{ group }}) %>%
@@ -141,7 +139,7 @@ cors_pooler <- function(grouping, group, target) {
   if (exists > 0) {
     sink("NUL")
     
-    results <- with(pvlist, lm(scale(PV_w9) ~ scale(PV_w3))) %>%
+    results <- with(pvlist, lm(scale(t2_pv) ~ scale(t1_pv))) %>%
       MIcombine() %>%
       summary()
     
@@ -176,7 +174,9 @@ cors <- expand_grid(
 cors <- cors %>%
   rowwise() %>%
   mutate(ergebnis = list(cors_pooler(grouping, group, target))) %>%
-  unnest(ergebnis)
+  unnest(ergebnis) %>% 
+  mutate(domain = str_extract(target, pattern = "reading|math"),
+          study = str_extract(target, pattern = "neps|piaac")) 
 
 cors
 
@@ -184,13 +184,13 @@ cors
 
 rci_pooler <- function(grouping, group, target) {
   data <- get(target) %>%
-    filter(!is.na(PV_w9) & !is.na(PV_w3))
+    filter(!is.na(t2_pv) & !is.na(t1_pv))
   
   # Compute the SD of the competence at T1 in the full sample (not subgroup)
   
   sds <- data %>%
     group_by(.imp) %>%
-    summarise(t1 = sd(PV_w3)) %>%
+    summarise(t1 = sd(t1_pv)) %>%
     summarise(across(everything(), mean))
   
   # Define generic function to compute RCI, using the correlation between the
@@ -204,7 +204,7 @@ rci_pooler <- function(grouping, group, target) {
     data <- data %>%
       filter(.data[[grouping]] == {{ group }}) %>%
       mutate(
-        rci_raw = .data$PV_w9 - .data$PV_w3 /
+        rci_raw = .data$t2_pv - .data$t1_pv /
           (sqrt(2 * (sds$t1 * sqrt((1 - rxx)^2)))),
         rci_up = .data$rci_raw > 1.96,
         rci_down = .data$rci_raw < -1.96
@@ -221,7 +221,7 @@ rci_pooler <- function(grouping, group, target) {
   # full sample
   rxx <- with(
     imputationList(pvlist),
-    lm(scale(PV_w9) ~ scale(PV_w3))
+    lm(scale(t2_pv) ~ scale(t1_pv))
   ) %>%
     MIcombine() %>%
     summary() %>%
