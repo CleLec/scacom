@@ -62,6 +62,18 @@ data_ptarget <- sjlabelled::read_spss(
   )
 )
 
+data_methods <- sjlabelled::read_spss(
+  str_c(
+    dirs$data,
+    "SC6_Methods_D_11-0-0.sav"
+  )
+) %>% 
+filter(wave == 3) %>% 
+select(ID_t, tx80101, tx80102)
+
+#' - tx80101: federal state
+#' - tx80102: BIK category (size of town)
+
 data_books <- data_ptarget %>%
   select(ID_t, wave, t34005a) %>%
   arrange(ID_t, wave) %>%
@@ -74,6 +86,13 @@ data_books <- data_ptarget %>%
 data_comp <- sjlabelled::read_spss(
   str_c(dirs$data, "SC6_xTargetCompetencies_D_11-0-0.sav")
 )
+
+data_weights <- sjlabelled::read_spss(
+  str_c(dirs$data, 
+        "SC6_Weights_D_11-0-0.sav"
+        )
+) %>%
+  select(ID_t, w_t456789_std, w_t3_cal, w_t9_cal)
 
 wletable <- tibble(
   var = data_comp %>% sjlabelled::get_label() %>% names(),
@@ -90,6 +109,10 @@ data_merged <-
     data_books,
     by = "ID_t"
   ) %>%
+  full_join(.,
+            data_methods,
+            by = "ID_t"
+  ) %>%
   select(ID_t,
     yborn = tx2900y, gender = t700001, eduyrs = tx28102,
     casmin = tx28101, isced = tx28103, language = tx29003,
@@ -98,7 +121,7 @@ data_merged <-
     math3 = maa3_sc1u, read3 = rea3_sc1u,
     math9 = maa9_sc1u, read9 = rea9_sc1u,
     ict = ica5_sc1, science = sca5_sc1,
-    gf = dga7_sc3b
+    gf = dga7_sc3b, state = tx80101, townsize = tx80102,
   ) %>%
   mutate(
     age = 2011 - yborn, age2 = age^2, age3 = age^3, eduyrs2 = eduyrs^2,
@@ -108,8 +131,7 @@ data_merged <-
   ) %>%
   mutate(across(
     c(
-      gender, edugr, language, casmin, # books - #books is optional
-    ),
+      gender, edugr, language, casmin, isced, state, townsize), # categorical variables
     as_factor
   ))
 
@@ -126,8 +148,8 @@ read_pvs <- plausible_values(
     data_merged,
     ID_t, age, age2, age3, gender,
     edugr, language, hhsize, books,
-    math3, science, ict, # math9,
-    gf, cumemp, fases
+    state, townsize, cumemp, fases,
+    math3, science, ict, gf, 
   ),
   npv = 10,
   longitudinal = TRUE,
@@ -149,8 +171,8 @@ math_pvs <- plausible_values(
     data_merged,
     ID_t, age, age2, age3, gender,
     edugr, language, hhsize, books,
-    read3, science, ict, # read9,
-    gf, cumemp, fases
+    state, townsize, cumemp, fases,
+    read3, science, ict, gf, 
   ),
   npv = 10,
   longitudinal = TRUE,
@@ -184,15 +206,17 @@ reading_neps <- read_pvs %>%
   unnest(., value) %>%
   left_join(., read_wles, by = "ID_t") %>%
   left_join(., read_eaps, by = "ID_t") %>%
+  left_join(., data_weights, by = "ID_t") %>%
   mutate(
-    agegr = if_else(age < 35, 0,
-      if_else(age >= 35 & age < 45, 1,
-        if_else(age >= 45 & age < 55, 2, 3)
-      )
+    agegr = if_else(age <= 34, 0,
+                    if_else(age > 34 & age <= 44, 1,
+                            if_else(age > 44 & age <= 54, 2, 3)
+                    )
     ),
     total = 1 #needed for selecting all observations in subsequent analysis 
   ) %>%
-  rename(t1_pv = PV_w3, t2_pv = PV_w9) %>%
+  rename(t1_pv = PV_w3, t2_pv = PV_w9,
+         t1_wle = wle_w3, t2_wle = wle_w9) %>% 
   filter(!is.na(t1_pv) & !is.na(t2_pv)) # drop incomplete respondents
 
 math_neps <- math_pvs %>%
@@ -201,16 +225,19 @@ math_neps <- math_pvs %>%
   unnest(., value) %>%
   left_join(., math_wles, by = "ID_t") %>%
   left_join(., math_eaps, by = "ID_t") %>%
+  left_join(., data_weights, by = "ID_t") %>%
   mutate(
-    agegr = if_else(age < 35, 0,
-      if_else(age >= 35 & age < 45, 1,
-        if_else(age >= 45 & age < 55, 2, 3)
-      )
+    agegr = if_else(age <= 34, 0,
+                    if_else(age > 34 & age <= 44, 1,
+                            if_else(age > 44 & age <= 54, 2, 3)
+                    )
     ),
     total = 1 #needed for selecting all observations in subsequent analysis 
   ) %>%
-  rename(t1_pv = PV_w3, t2_pv = PV_w9) %>% # drop incomplete respondents
-  filter(!is.na(t1_pv) & !is.na(t2_pv))
+  rename(t1_pv = PV_w3, t2_pv = PV_w9,
+         t1_wle = wle_w3, t2_wle = wle_w9, 
+         weight = w_t456789_std) %>% 
+  filter(!is.na(t1_pv) & !is.na(t2_pv))# drop incomplete respondents
 
 
 # Save the PV files
