@@ -126,10 +126,10 @@ read_pvs <- plausible_values(
     data_merged,
     ID_t, age, age2, age3, gender,
     edugr, language, hhsize, books,
-    math3,  science, ict, #math9,
+    math3, science, ict, # math9,
     gf, cumemp, fases
   ),
-  npv = 20,
+  npv = 10,
   longitudinal = TRUE,
   min_valid = 3,
   include_nr = FALSE,
@@ -149,10 +149,10 @@ math_pvs <- plausible_values(
     data_merged,
     ID_t, age, age2, age3, gender,
     edugr, language, hhsize, books,
-    read3, science, ict, # read9, 
+    read3, science, ict, # read9,
     gf, cumemp, fases
   ),
-  npv = 20,
+  npv = 10,
   longitudinal = TRUE,
   min_valid = 3,
   include_nr = FALSE,
@@ -184,11 +184,15 @@ reading <- read_pvs %>%
   unnest(., value) %>%
   left_join(., read_wles, by = "ID_t") %>%
   left_join(., read_eaps, by = "ID_t") %>%
-  mutate(agegr = if_else(age < 35, 0,
-    if_else(age >= 35 & age < 45, 1,
-      if_else(age >= 45 & age < 55, 2, 3)
-    )
-  ))
+  mutate(
+    agegr = if_else(age < 35, 0,
+      if_else(age >= 35 & age < 45, 1,
+        if_else(age >= 45 & age < 55, 2, 3)
+      )
+    ),
+    total = 1 #needed for selecting all observations in subsequent analysis 
+  ) %>%
+  rename(t1_pv = PV_w3, t2_pv = PV_w9)
 
 math <- math_pvs %>%
   get_pv_list() %>%
@@ -196,13 +200,17 @@ math <- math_pvs %>%
   unnest(., value) %>%
   left_join(., math_wles, by = "ID_t") %>%
   left_join(., math_eaps, by = "ID_t") %>%
-  mutate(agegr = if_else(age < 35, 0,
-    if_else(age >= 35 & age < 45, 1,
-      if_else(age >= 45 & age < 55, 2, 3)
-    )
-  ))
+  mutate(
+    agegr = if_else(age < 35, 0,
+      if_else(age >= 35 & age < 45, 1,
+        if_else(age >= 45 & age < 55, 2, 3)
+      )
+    ),
+    total = 1 #needed for selecting all observations in subsequent analysis 
+  ) %>%
+  rename(t1_pv = PV_w3, t2_pv = PV_w9)
 
 
 # Save the PV files
-save(math, file = "math.Rda")
-save(reading, file = "reading.Rda")
+save(math, file = "math_neps.Rda")
+save(reading, file = "reading_neps.Rda")
