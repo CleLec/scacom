@@ -216,7 +216,8 @@ reading_neps <- read_pvs %>%
     total = 1 #needed for selecting all observations in subsequent analysis 
   ) %>%
   rename(t1_pv = PV_w3, t2_pv = PV_w9,
-         t1_wle = wle_w3, t2_wle = wle_w9) %>% 
+         t1_wle = wle_w3, t2_wle = wle_w9, 
+         weight = w_t456789_std) %>% 
   filter(!is.na(t1_pv) & !is.na(t2_pv)) # drop incomplete respondents
 
 math_neps <- math_pvs %>%
@@ -239,7 +240,9 @@ math_neps <- math_pvs %>%
          weight = w_t456789_std) %>% 
   filter(!is.na(t1_pv) & !is.na(t2_pv))# drop incomplete respondents
 
-
+# Save the imputations
+save(math_pvs, file = "math_pvs_neps.Rda")
+save(read_pvs, file = "read_pvs_neps.Rda")
 # Save the PV files
 save(math_neps, file = "math_neps.Rda")
 save(reading_neps, file = "reading_neps.Rda")

@@ -26,8 +26,10 @@ library(mitools)
 # and add new column "total" (needed only for simplified computation inside the
 # functions defined next)
 
-map(c("math_neps.Rda", "reading_neps.Rda", 
-         "math_piaac.Rda",  "reading_piaac.Rda"), load, .GlobalEnv)
+map(c(
+  "math_neps.Rda", "reading_neps.Rda",
+  "math_piaac.Rda", "reading_piaac.Rda"
+), load, .GlobalEnv)
 
 # Analyzing mean-level change in competences ------------------------------
 
@@ -37,45 +39,47 @@ map(c("math_neps.Rda", "reading_neps.Rda",
 
 deltas_pooler <- function(grouping, group, target) {
 
-  # Get the target data (defined by study and competence domain) 
-  # from the global environment
-  data <- get(target) %>%
-    filter(!is.na(t2_pv) & !is.na(t1_pv))
-
-  # Switch off messages from mitools
- sink("NUL")
-  
-  # Reshape data from long format to mitools-style imputation list
-  pvlist <- data %>%
+  # Get the target data (defined by study and competence domain)
+  # from the global environment and convert it to a imputation list
+  pvlist <- get(target) %>%
     filter(.data[[grouping]] == {{ group }}) %>%
     split(.$.imp) %>%
     imputationList()
-  
+
+  # Switch off messages from mitools
+  sink("NUL")
+
   # Perform analysis of mean-level change and pool it
-   deltas <- with(pvlist, lm(t2_pv - t1_pv ~ 1)) %>%
-   MIcombine() %>%
-   summary()
-  
-   # Compute pooled SDs in the full sample
-    sds <- get(target) %>%
-      group_by(.imp) %>%
-      summarise(
-        pooled = 0.5 * (sd(t1_pv) + sd(t2_pv)),
-        delta = sd(t2_pv - t1_pv)
-      ) %>%
-      summarise(across(where(is.numeric), mean))
-    
-  sink()
-    
-    # Extract results in tidy format
-     resultlist <- tibble(
-       diff = deltas[["results"]], # T2-T1 difference score
-       se = deltas[["se"]], # SE of the difference score
-       lower = deltas[["(lower"]], # lower bound of difference score
-       upper = deltas[["upper)"]], # upper bound
-       d_z = diff / sds$delta, # Cohen's d_z
-       d_av = diff / sds$pooled # Cohens's d_av
+  deltas <- with(
+    pvlist,
+    lm((t2_pv - t1_pv) ~ 1,
+      weights = weight
     )
+  ) %>%
+    MIcombine() %>%
+    summary()
+
+  # Compute pooled  SDs in the full sample
+
+  sds <- get(target) %>%
+    group_by(.imp) %>%
+    summarise(
+      pooled = 0.5 * (sd(t1_pv) + sd(t2_pv)),
+      delta = sd(t2_pv - t1_pv)
+    ) %>%
+    summarise(across(where(is.numeric), mean))
+
+  sink()
+
+  # Extract results in tidy format
+  resultlist <- tibble(
+    diff = deltas[["results"]], # T2-T1 difference score
+    se = deltas[["se"]], # SE of the difference score
+    lower = deltas[["(lower"]], # lower bound of difference score
+    upper = deltas[["upper)"]], # upper bound
+    d_z = diff / sds[["delta"]], # Cohen's d_z
+    d_av = diff / sds[["pooled"]] # Cohens's d_av
+  )
 
   resultlist
 }
@@ -87,8 +91,8 @@ deltas <- expand_grid(
   group = c(0:3)
 ) %>%
   filter(!(grouping == "gender" & group %in% c(0, 3)) &
-           !(grouping == "edugr" & group == 3) &
-           !(grouping == "total" & group != 1)) %>%
+    !(grouping == "edugr" & group == 3) &
+    !(grouping == "total" & group != 1)) %>%
   arrange(desc(target), desc(grouping), group)
 
 # Map the function to the tibble to obtain the results
@@ -96,10 +100,13 @@ deltas <- deltas %>%
   rowwise() %>%
   mutate(results = list(deltas_pooler(grouping, group, target))) %>%
   unnest(results) %>%
-  mutate(domain = str_extract(target, pattern = "reading|math"),
-         study = str_extract(target, pattern = "neps|piaac")) 
+  mutate(
+    domain = str_extract(target, pattern = "reading|math"),
+    study = str_extract(target, pattern = "neps|piaac")
+  )
 
 deltas
+
 # Add information for the total sample
 
 # Equivalently,
@@ -117,45 +124,29 @@ deltas
 # pools the results across the PVs (imputations) and saves everything including
 
 cors_pooler <- function(grouping, group, target) {
-  
-  data <- get(target) %>%
-    filter(!is.na(t2_pv) & !is.na(t1_pv))
-  
-  exists <- data %>%
-    filter(.data[[grouping]] == {{ group }}) %>%
-    nrow()
-  
-  cat(paste0(
-    "\nGroup ", grouping, " = ", group, " has ",
-    exists / n_distinct(data$.imp),
-    " cases for the target of ", target
-  ))
-  
-  pvlist <- data %>%
+  pvlist <- get(target) %>%
     filter(.data[[grouping]] == {{ group }}) %>%
     split(.$.imp) %>%
     imputationList()
-  
-  if (exists > 0) {
-    sink("NUL")
-    
-    results <- with(pvlist, lm(scale(t2_pv) ~ scale(t1_pv))) %>%
-      MIcombine() %>%
-      summary()
-    
-    
-    sink()
-    
-    resultlist <- tibble(
-      rho = results[["results"]][2],
-      se = results[["se"]][2],
-      lower = results[["(lower"]][2],
-      upper = results[["upper)"]][2]
-    )
-  } else {
-    resultlist <- "Non-existent (sub-)group"
-  }
-  
+
+  sink("NUL")
+
+  results <- with(pvlist, lm(scale(t2_pv) ~ scale(t1_pv),
+    weights = weight
+  )) %>%
+    MIcombine() %>%
+    summary()
+
+
+  sink()
+
+  resultlist <- tibble(
+    rho = results[["results"]][2],
+    se = results[["se"]][2],
+    lower = results[["(lower"]][2],
+    upper = results[["upper)"]][2]
+  )
+
   resultlist
 }
 
@@ -166,33 +157,30 @@ cors <- expand_grid(
   group = c(0:3)
 ) %>%
   filter(!(grouping == "gender" & group %in% c(0, 3)) &
-           !(grouping == "edugr" & group == 3) &
-           !(grouping == "total" & group != 1)) %>%
+    !(grouping == "edugr" & group == 3) &
+    !(grouping == "total" & group != 1)) %>%
   arrange(desc(target), desc(grouping), group)
 
 # Map the function to the tibble to obtain the results
 cors <- cors %>%
   rowwise() %>%
   mutate(ergebnis = list(cors_pooler(grouping, group, target))) %>%
-  unnest(ergebnis) %>% 
-  mutate(domain = str_extract(target, pattern = "reading|math"),
-          study = str_extract(target, pattern = "neps|piaac")) 
+  unnest(ergebnis) %>%
+  mutate(
+    domain = str_extract(target, pattern = "reading|math"),
+    study = str_extract(target, pattern = "neps|piaac")
+  )
 
 cors
 
 # Reliable change indices (RCIs) -----------------------------------------------
 
+
 rci_pooler <- function(grouping, group, target) {
-  data <- get(target) %>%
-    filter(!is.na(t2_pv) & !is.na(t1_pv))
-  
-  # Compute the SD of the competence at T1 in the full sample (not subgroup)
-  
-  sds <- data %>%
-    group_by(.imp) %>%
-    summarise(t1 = sd(t1_pv)) %>%
-    summarise(across(everything(), mean))
-  
+  data <- get(target)
+
+
+
   # Define generic function to compute RCI, using the correlation between the
   # two measurement occasions as the reliability / stability measure
   # Three indices are computed:
@@ -202,55 +190,57 @@ rci_pooler <- function(grouping, group, target) {
   # Note: RCI is subgroup-specific but rxx and SDt1 are from the full sample
   rci <- function(data) {
     data <- data %>%
+      mutate(sd_t1 = sd(t1_pv)) %>%
       filter(.data[[grouping]] == {{ group }}) %>%
       mutate(
-        rci_raw = .data$t2_pv - .data$t1_pv /
-          (sqrt(2 * (sds$t1 * sqrt((1 - rxx)^2)))),
+        rci_raw = (t2_pv - t1_pv) /
+          (sqrt(2 * (sd_t1 * sqrt((1 - rxx)^2)))),
         rci_up = .data$rci_raw > 1.96,
         rci_down = .data$rci_raw < -1.96
       )
     data
   }
-  
+
   # Generate list of data sets containing the plausible values (PVs)
   pvlist <- data %>%
     split(.$.imp)
-  
-  
+
+
   # Compute rxx, the correlation between competences at both time points for the
   # full sample
   rxx <- with(
     imputationList(pvlist),
-    lm(scale(t2_pv) ~ scale(t1_pv))
+    lm(scale(t2_pv) ~ scale(t1_pv), )
   ) %>%
     MIcombine() %>%
     summary() %>%
     pluck("results", 2)
-  
+
   # Add the RCI variables to each dataset in the list of datasets containing PVs
   sink("NUL")
-  
+
   pvlist <- pvlist %>%
     map(rci) %>%
-    map(~ select(., rci_raw, rci_up, rci_down))
-  
-  
+    map(~ select(., rci_raw, rci_up, rci_down)) %>%
+    imputationList()
+
+
   results <- tibble(
-    raw = with(imputationList(pvlist), lm(rci_raw ~ 1)) %>%
+    raw = with(pvlist, lm(rci_raw ~ 1)) %>%
       MIcombine() %>%
       summary() %>%
       pluck("results", 1),
-    up = with(imputationList(pvlist), lm(rci_up ~ 1)) %>%
+    up = with(pvlist, lm(rci_up ~ 1)) %>%
       MIcombine() %>%
       summary() %>%
       pluck("results", 1) * 100,
-    down = with(imputationList(pvlist), lm(rci_down ~ 1)) %>%
+    down = with(pvlist, lm(rci_down ~ 1)) %>%
       MIcombine() %>%
       summary() %>%
       pluck("results", 1) * 100
   )
   sink()
-  
+
   results
 }
 
@@ -261,8 +251,8 @@ rcis <- expand_grid(
   group = c(0:3)
 ) %>%
   filter(!(grouping == "gender" & group %in% c(0, 3)) &
-           !(grouping == "edugr" & group == 3) &
-           !(grouping == "total" & group != 1)) %>%
+    !(grouping == "edugr" & group == 3) &
+    !(grouping == "total" & group != 1)) %>%
   arrange(desc(target), desc(grouping), group)
 
 # Map the function to the tibble to obtain the results
@@ -272,4 +262,3 @@ rcis <- rcis %>%
   unnest(ergebnis)
 
 rcis
-
