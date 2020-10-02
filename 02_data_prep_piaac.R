@@ -38,7 +38,7 @@ piaacl15 <- read_spss(glue(
   "/ZA5989_Persons_15_v3-0-0.sav"
 )) %>%
   filter(anchor_15 == 1) %>%
-  select(seqid, pnrfestid, starts_with("PV"), starts_with("WLE"),
+  select(seqid, pnrfestid, starts_with("PV"), lit,
     #  starts_with("assess"),
     edu = B_Q01a_15
   )
@@ -91,7 +91,8 @@ reading_piaac <- piaacl %>%
   ) %>%
   relocate(.imp, before =  seqid) %>%
   rename(t1_pv = '12', t2_pv = '15') %>%
-  mutate(total = 1) #needed for selecting all observations in the analyses
+  mutate(total = 1) %>%  #needed for selecting all observations in the analyses
+  left_join()
 
 # Create reshaped math data
 math_piaac <- piaacl %>%
