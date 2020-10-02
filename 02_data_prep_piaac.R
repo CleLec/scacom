@@ -83,7 +83,7 @@ reading_piaac <- piaacl %>%
     cols = matches("PVLIT.+_1._15"),
     values_to = "score",
     names_to = c(".imp", "year"),
-    names_pattern = "PVLIT(.*)_(.+)_15"
+    names_pattern = "PVLIT(.+)_(.+)_15"
   ) %>%
   pivot_wider(.,
     values_from = c("score"),
@@ -100,7 +100,7 @@ math_piaac <- piaacl %>%
     cols = matches("PVNUM.+_1._15"),
     values_to = "score",
     names_to = c(".imp", "year"),
-    names_pattern = "PVNUM(.*)_(.+)_15"
+    names_pattern = "PVNUM(.+)_(.+)_15"
   ) %>%
   pivot_wider(.,
     values_from = c("score"),

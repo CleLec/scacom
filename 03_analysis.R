@@ -52,7 +52,7 @@ deltas_pooler <- function(grouping, group, target) {
   # Perform analysis of mean-level change and pool it
   deltas <- with(
     pvlist,
-    lm((t2_pv - t1_pv) ~ 1,
+    lm(t2_pv - t1_pv ~ 1,
       weights = weight
     )
   ) %>%
