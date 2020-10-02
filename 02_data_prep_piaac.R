@@ -38,7 +38,7 @@ piaacl15 <- read_spss(glue(
   "/ZA5989_Persons_15_v3-0-0.sav"
 )) %>%
   filter(anchor_15 == 1) %>%
-  select(seqid, pnrfestid, starts_with("PV"), lit,
+  select(seqid, pnrfestid, starts_with("PV"), 
     #  starts_with("assess"),
     edu = B_Q01a_15
   )
@@ -80,7 +80,7 @@ rm(list = c("piaac12", "piaacl15", "weights15"))
 reading_piaac <- piaacl %>%
   select(-starts_with("PVNUM")) %>%
   pivot_longer(
-    cols = matches("PVLIT.+_1._15"),
+    cols = matches("PVLIT(.+)_(1.)_15"),
     values_to = "score",
     names_to = c(".imp", "year"),
     names_pattern = "PVLIT(.+)_(.+)_15"
@@ -91,25 +91,25 @@ reading_piaac <- piaacl %>%
   ) %>%
   relocate(.imp, before =  seqid) %>%
   rename(t1_pv = '12', t2_pv = '15') %>%
-  mutate(total = 1) %>%  #needed for selecting all observations in the analyses
-  left_join()
+  mutate(total = 1)   #needed for selecting all observations in the analyses
+  
 
 # Create reshaped math data
 math_piaac <- piaacl %>%
   select(-starts_with("PVLIT")) %>%
   pivot_longer(
-    cols = matches("PVNUM.+_1._15"),
+    cols = matches("PVNUM(.+)_(1.)_15"),
     values_to = "score",
     names_to = c(".imp", "year"),
     names_pattern = "PVNUM(.+)_(.+)_15"
   ) %>%
   pivot_wider(.,
-    values_from = c("score"),
-    names_from = c("year")
+              values_from = c("score"),
+              names_from = c("year")
   ) %>%
-  relocate(.imp, before = seqid) %>%
+  relocate(.imp, before =  seqid) %>%
   rename(t1_pv = '12', t2_pv = '15') %>%
-  mutate(total = 1) #needed for selecting all observations in the analyses
+  mutate(total = 1)  #needed for selecting all observations in the analyses
 
 
 # Save the new data in .Rdata ---------------------------------------------
