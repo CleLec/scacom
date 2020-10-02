@@ -9,8 +9,8 @@ rm(list = ls())
 
 # List of subdirectories
 dirs <- list(
-  main = "D:/Dropbox/Forschung und Lehre/Stability_PIAAC_NEPS"
-  # results = "./02_results"
+  main = "D:/Dropbox/Forschung und Lehre/Stability_PIAAC_NEPS",
+  results = "./02_results"
 )
 
 
@@ -53,7 +53,7 @@ deltas_pooler <- function(grouping, group, target) {
   deltas <- with(
     pvlist,
     lm(t2_pv - t1_pv ~ 1,
-      weights = weight
+      weights = NULL
     )
   ) %>%
     MIcombine() %>%
@@ -132,7 +132,7 @@ cors_pooler <- function(grouping, group, target) {
   sink("NUL")
 
   results <- with(pvlist, lm(scale(t2_pv) ~ scale(t1_pv),
-    weights = weight
+    weights = NULL
   )) %>%
     MIcombine() %>%
     summary()
@@ -177,10 +177,6 @@ cors
 
 
 rci_pooler <- function(grouping, group, target) {
-  data <- get(target)
-
-
-
   # Define generic function to compute RCI, using the correlation between the
   # two measurement occasions as the reliability / stability measure
   # Three indices are computed:
@@ -188,60 +184,28 @@ rci_pooler <- function(grouping, group, target) {
   # (2) upward change > 1.96 SDdiff or not,
   # (3) downward change smaller than 1.96 SDdiff or not)
   # Note: RCI is subgroup-specific but rxx and SDt1 are from the full sample
-  rci <- function(data) {
-    data <- data %>%
-      mutate(sd_t1 = sd(t1_pv)) %>%
-      filter(.data[[grouping]] == {{ group }}) %>%
+  rci_data <- get(target) %>%
+    group_by(.imp) %>%
+      mutate(sd_t1 = sd(t1_pv), # Full sample sd and rxx within each imputation
+             rxx = cor(t1_pv, t2_pv)) %>%
+      ungroup() %>% 
       mutate(
         rci_raw = (t2_pv - t1_pv) /
-          (sqrt(2 * (sd_t1 * sqrt((1 - rxx)^2)))),
-        rci_up = .data$rci_raw > 1.96,
-        rci_down = .data$rci_raw < -1.96
+          (sqrt(2 * (.data$sd_t1 * sqrt(1 - .data$rxx))^2)),
+        rci_up = .data$rci_raw >= 1.96,
+        rci_down = .data$rci_raw <= -1.96
       )
-    data
-  }
 
-  # Generate list of data sets containing the plausible values (PVs)
-  pvlist <- data %>%
-    split(.$.imp)
-
-
-  # Compute rxx, the correlation between competences at both time points for the
-  # full sample
-  rxx <- with(
-    imputationList(pvlist),
-    lm(scale(t2_pv) ~ scale(t1_pv), )
-  ) %>%
-    MIcombine() %>%
-    summary() %>%
-    pluck("results", 2)
-
-  # Add the RCI variables to each dataset in the list of datasets containing PVs
-  sink("NUL")
-
-  pvlist <- pvlist %>%
-    map(rci) %>%
-    map(~ select(., rci_raw, rci_up, rci_down)) %>%
-    imputationList()
-
-
-  results <- tibble(
-    raw = with(pvlist, lm(rci_raw ~ 1)) %>%
-      MIcombine() %>%
-      summary() %>%
-      pluck("results", 1),
-    up = with(pvlist, lm(rci_up ~ 1)) %>%
-      MIcombine() %>%
-      summary() %>%
-      pluck("results", 1) * 100,
-    down = with(pvlist, lm(rci_down ~ 1)) %>%
-      MIcombine() %>%
-      summary() %>%
-      pluck("results", 1) * 100
-  )
-  sink()
-
-  results
+  rci_pooled <- rci_data %>%
+    filter(.data[[grouping]] == {{ group }}) %>%
+    summarise(
+      raw = mean(rci_raw),
+      up = mean(rci_up) * 100,
+      down = mean(rci_down) * 100
+    )
+  
+  rci_pooled
+  
 }
 
 # Create a tibble with combinations of targets and subgroups
@@ -259,6 +223,76 @@ rcis <- expand_grid(
 rcis <- rcis %>%
   rowwise() %>%
   mutate(ergebnis = list(rci_pooler(grouping, group, target))) %>%
-  unnest(ergebnis)
+  unnest(ergebnis )%>%
+  mutate(
+    domain = str_extract(target, pattern = "reading|math"),
+    study = str_extract(target, pattern = "neps|piaac")
+  )
+
 
 rcis
+
+
+# Save the results --------------------------------------------------------
+
+save(cors, 
+     file = glue({dirs$results}, "/", "cors.Rda"))
+save(deltas, 
+     file = glue({dirs$results}, "/", "deltas.Rda"))
+
+
+cors.piaac <- 
+bind_cols(
+  cors %>% 
+    filter(study == "piaac" & domain == "reading") %>%
+    mutate(ci = str_c(
+      "[", 
+      str_sub(lower, 2,4),
+      ", ",
+      str_sub(upper, 2,4), "]", sep = ""),
+      Group = str_c(
+        grouping, group, sep = "="
+      )) %>%
+    select(Group, rho, ci),
+  cors %>% 
+    filter(study == "piaac" & domain == "math") %>%
+    mutate(ci = str_c(
+      "[", 
+      str_sub(lower, 2,4),
+      ", ",
+      str_sub(upper, 2,4), "]", sep = ""),
+      Group = str_c(
+        grouping, group, sep = "="
+      )) %>%
+    select(rho, ci),
+  .name_repair = "minimal"
+  )
+
+
+cors.neps <- 
+  bind_cols(
+    cors %>% 
+      filter(study == "neps" & domain == "reading") %>%
+      mutate(ci = str_c(
+        "[", 
+        str_sub(lower, 2,4),
+        ", ",
+        str_sub(upper, 2,4), "]", sep = ""),
+        Group = str_c(
+          grouping, group, sep = "="
+        )) %>%
+      select(Group, rho, ci),
+    cors %>% 
+      filter(study == "neps" & domain == "math") %>%
+      mutate(ci = str_c(
+        "[", 
+        str_sub(lower, 2,4),
+        ", ",
+        str_sub(upper, 2,4), "]", sep = ""),
+        Group = str_c(
+          grouping, group, sep = "="
+        )) %>%
+      select(rho, ci),
+    .name_repair = "minimal"
+  )
+
