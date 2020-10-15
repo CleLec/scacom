@@ -333,11 +333,12 @@ deltas.table <-
           ", ",
           str_sub(upper, 1, 4), "]", sep = ""),
         read.piaac = str_c(param, ci, sep = " \n "),
+        read.piaac.d = papaja::printnum(d_z),
         Group = str_c(
           grouping, group, sep = "="
         ),
       ) %>%
-      select(Group, read.piaac),
+      select(Group, read.piaac, read.piaac.d),
     # Math in PIAAC
     deltas %>% 
       filter(study == "piaac" & domain == "math") %>%
@@ -349,10 +350,11 @@ deltas.table <-
           ", ",
           str_sub(upper, 1, 4), "]", sep = ""),
         math.piaac = str_c(param, ci, sep = " \n "),
+        math.piaac.d = papaja::printnum(d_z),
         Group = str_c(
           grouping, group, sep = "="
         )) %>%
-      select(math.piaac),
+      select(math.piaac, math.piaac.d),
     # Reading in NEPS
     deltas %>% 
       filter(study == "neps" & domain == "reading") %>%
@@ -364,11 +366,12 @@ deltas.table <-
           ", ",
           str_sub(upper, 1, 4), "]", sep = ""),
         read.neps = str_c(param, ci, sep = " \n  "),
+        read.neps.d = papaja::printnum(d_z),
         Group = str_c(
           grouping, group, sep = "="
         ),
       ) %>%
-      select(read.neps),
+      select(read.neps, read.neps.d),
     # Math in NEPS
     deltas %>% 
       filter(study == "neps" & domain == "math") %>%
@@ -380,10 +383,11 @@ deltas.table <-
           ", ",
           str_sub(upper, 1, 4), "]", sep = ""),
         math.neps = str_c(param, ci, sep = " \n "),
+        math.neps.d = papaja::printnum(d_z),
         Group = str_c(
           grouping, group, sep = "="
         )) %>%
-      select(math.neps),
+      select(math.neps, math.neps.d = d_z),
     .name_repair = "minimal"
   ) %>%
   mutate(Group = str_replace_all(Group, 
