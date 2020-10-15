@@ -76,6 +76,7 @@ deltas_pooler <- function(grouping, group, target) {
     delta = deltas[["results"]], # T2-T1 difference score
     se = deltas[["se"]], # SE of the difference score
     lower = deltas[["(lower"]], # lower bound of difference score
+    sd = sds[["delta"]], # SD of the difference score
     upper = deltas[["upper)"]], # upper bound
     d_z = delta / sds[["delta"]], # Cohen's d_z
     d_av = delta / sds[["pooled"]] # Cohens's d_av
@@ -236,173 +237,107 @@ rcis
 
 # Create publication-ready tables -----------------------------------------
 
+# Correlation tables
+cor_shaper <- function(which.domain, which.study) {
+  rho.name <- glue("r.{which.study}.{which.domain}")
+  ci.name <- glue("ci.{which.study}.{which.domain}")
+  cors %>%
+    filter(study == which.study & domain == which.domain) %>%
+    mutate(
+      !!rho.name := str_sub(rho, 2, 4),
+      !!ci.name := str_c(
+        "[",
+        str_sub(lower, 2, 4),
+        ", ",
+        str_sub(upper, 2, 4), "]",
+        sep = ""
+      ),
+      Group = str_c(
+        grouping, group,
+        sep = "="
+      ),
+    ) %>%
+    select(Group, rho.name, ci.name)
+}
 
-cors.table <- 
+cors.table <-
   bind_cols(
-    # Reading in PIAAC
-      cors %>% 
-      filter(study == "piaac" & domain == "reading") %>%
-      mutate(
-        param = str_sub(rho, 2,4),
-        ci = str_c(
-          "[", 
-          str_sub(lower, 2,4),
-          ", ",
-          str_sub(upper, 2,4), "]", sep = ""),
-        read.piaac = str_c(param, ci, sep = " \n "),
-        Group = str_c(
-          grouping, group, sep = "="
-        ),
-      ) %>%
-      select(Group, read.piaac),
-    # Math in PIAAC
-    cors %>% 
-      filter(study == "piaac" & domain == "math") %>%
-      mutate(
-        param = str_sub(rho, 2,4),
-        ci = str_c(
-          "[", 
-          str_sub(lower, 2,4),
-          ", ",
-          str_sub(upper, 2,4), "]", sep = ""),
-        math.piaac = str_c(param, ci, sep = " \n "),
-        Group = str_c(
-          grouping, group, sep = "="
-        )) %>%
-      select(math.piaac),
-    # Reading in NEPS
-    cors %>% 
-      filter(study == "neps" & domain == "reading") %>%
-      mutate(
-        param = str_sub(rho, 2,4),
-        ci = str_c(
-          "[", 
-          str_sub(lower, 2,4),
-          ", ",
-          str_sub(upper, 2,4), "]", sep = ""),
-        read.neps = str_c(param, ci, sep = " \n  "),
-        Group = str_c(
-          grouping, group, sep = "="
-        ),
-      ) %>%
-      select(read.neps),
-    # Math in NEPS
-    cors %>% 
-      filter(study == "neps" & domain == "math") %>%
-      mutate(
-        param = str_sub(rho, 2,4),
-        ci = str_c(
-          "[", 
-          str_sub(lower, 2,4),
-          ", ",
-          str_sub(upper, 2,4), "]", sep = ""),
-        math.neps = str_c(param, ci, sep = " \n "),
-        Group = str_c(
-          grouping, group, sep = "="
-        )) %>%
-      select(math.neps),
-    .name_repair = "minimal"
+    read.piaac = cor_shaper("reading", "piaac"),
+    math.piaac = cor_shaper("math", "piaac"),
+    read.neps = cor_shaper("reading", "neps"),
+    math.neps = cor_shaper("math", "neps"),
+    .name_repair = "unique"
   ) %>%
-  mutate(Group = str_replace_all(Group, 
-                          c("total=1" =  "Total sample",
-                            "gender=1" = "Male",
-                            "gender=2" = "Female",
-                            "edugr=0"  = "low (ISCED 0–3)",
-                            "edugr=1" = "intermediate (ISCED 4/5B)",
-                            "edugr=2" = "high (ISCED 5A/6)",
-                            "agegr=0" = "18–34 years",
-                            "agegr=1" = "35–44 years",
-                            "agegr=2" = "45-54 years",
-                            "agegr=3" = "55 + years")
-  )
-  )
-                          
+  mutate(Group = str_replace_all(
+    Group...1,
+    c(
+      "total=1" = "Total sample",
+      "gender=1" = "Male",
+      "gender=2" = "Female",
+      "edugr=0" = "low (ISCED 0–3)",
+      "edugr=1" = "intermediate (ISCED 4/5B)",
+      "edugr=2" = "high (ISCED 5A/6)",
+      "agegr=0" = "18–34 years",
+      "agegr=1" = "35–44 years",
+      "agegr=2" = "45-54 years",
+      "agegr=3" = "55 + years"
+    )
+  )) %>%
+  select(Group, matches("piaac|neps"))
 
+# Deltas tables
 
+deltas_shaper <- function(which.domain, which.study) {
+  delta.name <- glue("delta.{which.study}.{which.domain}")
+  ci.name <- glue("ci.{which.study}.{which.domain}")
+  sd.name <- glue("sd.{which.study}.{which.domain}")
+  dav.name <- glue("dav.{which.study}.{which.domain}")
+  
+  deltas %>%
+    filter(study == which.study & domain == which.domain) %>%
+    mutate(
+      !!delta.name := str_sub(delta, 1, 3),
+      !!ci.name := str_c(
+        "[",
+        str_sub(lower, 1, 3),
+        ", ",
+        str_sub(upper, 1, 3), "]",
+        sep = ""
+      ),
+      !!sd.name := str_sub(sd, 1,3),
+      !!dav.name := str_sub(d_av, 1,3),
+       Group = str_c(
+        grouping, group,
+        sep = "="
+      ),
+    ) %>%
+    select(Group, delta.name, ci.name, sd.name, dav.name)
+}
 
-deltas.table <- 
+deltas.table <-
   bind_cols(
-    # Reading in PIAAC
-    deltas %>% 
-      filter(study == "piaac" & domain == "reading") %>%
-      mutate(
-        param = papaja::printnum(delta),
-        ci = str_c(
-          "[", 
-          str_sub(lower, 1, 4),
-          ", ",
-          str_sub(upper, 1, 4), "]", sep = ""),
-        read.piaac = str_c(param, ci, sep = " \n "),
-        read.piaac.d = papaja::printnum(d_z),
-        Group = str_c(
-          grouping, group, sep = "="
-        ),
-      ) %>%
-      select(Group, read.piaac, read.piaac.d),
-    # Math in PIAAC
-    deltas %>% 
-      filter(study == "piaac" & domain == "math") %>%
-      mutate(
-        param = papaja::printnum(delta),
-        ci = str_c(
-          "[", 
-          str_sub(lower, 1, 4),
-          ", ",
-          str_sub(upper, 1, 4), "]", sep = ""),
-        math.piaac = str_c(param, ci, sep = " \n "),
-        math.piaac.d = papaja::printnum(d_z),
-        Group = str_c(
-          grouping, group, sep = "="
-        )) %>%
-      select(math.piaac, math.piaac.d),
-    # Reading in NEPS
-    deltas %>% 
-      filter(study == "neps" & domain == "reading") %>%
-      mutate(
-        param = papaja::printnum(delta),
-        ci = str_c(
-          "[", 
-          str_sub(lower, 1, 4),
-          ", ",
-          str_sub(upper, 1, 4), "]", sep = ""),
-        read.neps = str_c(param, ci, sep = " \n  "),
-        read.neps.d = papaja::printnum(d_z),
-        Group = str_c(
-          grouping, group, sep = "="
-        ),
-      ) %>%
-      select(read.neps, read.neps.d),
-    # Math in NEPS
-    deltas %>% 
-      filter(study == "neps" & domain == "math") %>%
-      mutate(
-        param = papaja::printnum(delta),
-        ci = str_c(
-          "[", 
-          str_sub(lower, 1, 4),
-          ", ",
-          str_sub(upper, 1, 4), "]", sep = ""),
-        math.neps = str_c(param, ci, sep = " \n "),
-        math.neps.d = papaja::printnum(d_z),
-        Group = str_c(
-          grouping, group, sep = "="
-        )) %>%
-      select(math.neps, math.neps.d = d_z),
-    .name_repair = "minimal"
+    read.piaac = deltas_shaper("reading", "piaac"),
+    math.piaac = deltas_shaper("math", "piaac"),
+    read.neps = deltas_shaper("reading", "neps"),
+    math.neps = deltas_shaper("math", "neps"),
+    .name_repair = "unique"
   ) %>%
-  mutate(Group = str_replace_all(Group, 
-                                 c("total=1" =  "Total sample",
-                                   "gender=1" = "Male",
-                                   "gender=2" = "Female",
-                                   "edugr=0"  = "low (ISCED 0–3)",
-                                   "edugr=1" = "intermediate (ISCED 4/5B)",
-                                   "edugr=2" = "high (ISCED 5A/6)",
-                                   "agegr=0" = "18–34 years",
-                                   "agegr=1" = "35–44 years",
-                                   "agegr=2" = "45-54 years",
-                                   "agegr=3" = "55 + years")
-  )
-  )
+  mutate(Group = str_replace_all(
+    Group...1,
+    c(
+      "total=1" = "Total sample",
+      "gender=1" = "Male",
+      "gender=2" = "Female",
+      "edugr=0" = "low (ISCED 0–3)",
+      "edugr=1" = "intermediate (ISCED 4/5B)",
+      "edugr=2" = "high (ISCED 5A/6)",
+      "agegr=0" = "18–34 years",
+      "agegr=1" = "35–44 years",
+      "agegr=2" = "45-54 years",
+      "agegr=3" = "55 + years"
+    )
+  )) %>%
+  select(Group, matches("piaac|neps"))
 
 
 # Save all results --------------------------------------------------------
