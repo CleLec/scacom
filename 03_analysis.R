@@ -28,7 +28,7 @@ library(mitools)
 
 map(c(
   "math_neps.Rda", "reading_neps.Rda",
-  "math_neps.Rda", "reading_neps.Rda"
+  "math_piaac.Rda", "reading_piaac.Rda"
 ), load, .GlobalEnv)
 
 # Analyzing mean-level change in competences ------------------------------
@@ -100,7 +100,7 @@ deltas_pooler <- function(grouping, group, target) {
 
 # Create a tibble with combinations of targets and subgroups
 deltas <- expand_grid(
-  target = c("reading_neps", "math_neps", "reading_neps", "math_neps"),
+  target = c("reading_neps", "math_neps", "reading_piaac", "math_piaac"),
   grouping = c("total", "gender", "agegr", "edugr"),
   group = c(0:3)
 ) %>%
@@ -116,7 +116,7 @@ deltas <- deltas %>%
   unnest(results) %>%
   mutate(
     domain = str_extract(target, pattern = "reading|math"),
-    study = str_extract(target, pattern = "neps|neps")
+    study = str_extract(target, pattern = "neps|piaac")
   )
 
 deltas
@@ -166,7 +166,7 @@ cors_pooler <- function(grouping, group, target) {
 
 # Create a tibble for computing the PV-based correlations per subgroup
 cors <- expand_grid(
-  target = c("reading_neps", "math_neps", "reading_neps", "math_neps"),
+  target = c("reading_neps", "math_neps", "reading_piaac", "math_piaac"),
   grouping = c("total", "gender", "agegr", "edugr"),
   group = c(0:3)
 ) %>%
@@ -182,7 +182,7 @@ cors <- cors %>%
   unnest(ergebnis) %>%
   mutate(
     domain = str_extract(target, pattern = "reading|math"),
-    study = str_extract(target, pattern = "neps|neps")
+    study = str_extract(target, pattern = "neps|piaac")
   )
 
 cors
@@ -224,7 +224,7 @@ rci_pooler <- function(grouping, group, target) {
 
 # Create a tibble with combinations of targets and subgroups
 rcis <- expand_grid(
-  target = c("reading_neps", "math_neps", "reading_neps", "math_neps"),
+  target = c("reading_neps", "math_neps", "reading_piaac", "math_piaac"),
   grouping = c("total", "gender", "agegr", "edugr"),
   group = c(0:3)
 ) %>%
@@ -240,7 +240,7 @@ rcis <- rcis %>%
   unnest(ergebnis )%>%
   mutate(
     domain = str_extract(target, pattern = "reading|math"),
-    study = str_extract(target, pattern = "neps|neps")
+    study = str_extract(target, pattern = "neps|piaac")
   )
 
 
@@ -414,18 +414,18 @@ cors$category <- factor(cors$category,
 
 # Plot correlations
 cors %>% filter(str_detect(target, "neps"))  %>% 
-  ggplot(aes(x = Group2, y = rho, group = str_detect(target, "math"), 
+  ggplot(aes(x = Group, y = rho, group = str_detect(target, "math"), 
              color = domain)) + 
   geom_pointrange(aes(ymin = lower, ymax = upper), position =
                     position_dodge(width= 0.25))  +
   coord_cartesian(ylim = c(0.4, 1)) +
-  facet_wrap(~category, strip.position = "top",
-             scales = "free") +
-  theme(panel.spacing = unit(0, "lines"),
-        strip.background = element_blank(),
-        strip.placement = "outside") 
-  xlab("x-axis label")
-
+  facet_grid(cols = vars(category), #strip.position = "bottom",
+             scales = "free_x", space = "free_x") +
+  theme(#panel.spacing = unit(0, "lines"),
+     #   strip.background = element_blank(),
+       # strip.placement = "outside",
+        axis.text.x = element_text(angle=90, hjust = 1, vjust = 0.5) 
+  )
   
 # Plot difference scores based on the EAP scores and their SDs 
 neps_d_age <- reading_neps %>% 
