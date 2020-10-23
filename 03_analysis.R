@@ -1,6 +1,6 @@
 # Project Info: ----------------------------------------------------------------
 # Lechner et al. (2020). Stability and Change in Literacy and Numeracy
-# Step 4: Analyses in PIAAC-L.
+# Step 4: Analyses in neps-L.
 # This code was written by clemens.lechner@gesis.org
 # R 4.0.2
 
@@ -9,7 +9,7 @@ rm(list = ls())
 
 # List of subdirectories
 dirs <- list(
-  main = "D:/Dropbox/Forschung und Lehre/Stability_PIAAC_NEPS",
+  main = "D:/Dropbox/Forschung und Lehre/Stability_neps_NEPS",
   results = "./02_results"
 )
 
@@ -28,7 +28,7 @@ library(mitools)
 
 map(c(
   "math_neps.Rda", "reading_neps.Rda",
-  "math_piaac.Rda", "reading_piaac.Rda"
+  "math_neps.Rda", "reading_neps.Rda"
 ), load, .GlobalEnv)
 
 # Analyzing mean-level change in competences ------------------------------
@@ -59,6 +59,15 @@ deltas_pooler <- function(grouping, group, target) {
     MIcombine() %>%
     summary()
 
+  dzs <-   with(
+    pvlist,
+    lm((t2_pv - t1_pv) / sd(t2_pv - t1_pv) ~ 1,
+       weights = weight
+    )
+  ) %>%
+    MIcombine() %>%
+    summary()  
+
   # Compute pooled  SDs in the full sample
 
   sds <- get(target) %>%
@@ -76,18 +85,22 @@ deltas_pooler <- function(grouping, group, target) {
     delta = deltas[["results"]], # T2-T1 difference score
     se = deltas[["se"]], # SE of the difference score
     lower = deltas[["(lower"]], # lower bound of difference score
-    sd = sds[["delta"]], # SD of the difference score
     upper = deltas[["upper)"]], # upper bound
-    d_z = delta / sds[["delta"]], # Cohen's d_z
-    d_av = delta / sds[["pooled"]] # Cohens's d_av
-  )
+    sd = sds[["delta"]], # SD of the difference score
+    dz = dzs[["results"]], # Cohen's dz T2-T1 difference score
+    dz_lower = dzs[["(lower"]], # lower bound of Cohen's dz 
+    dz_upper = dzs[["upper)"]], # lower bound of Cohen's dz 
+    dav = delta / sds[["pooled"]], # Cohens's d_av # Alternative way to compute
+    dz2 = delta / sds[["delta"]] # Cohen's d_z    # ...dz and dav
+     )
+
 
   resultlist
 }
 
 # Create a tibble with combinations of targets and subgroups
 deltas <- expand_grid(
-  target = c("reading_piaac", "math_piaac", "reading_neps", "math_neps"),
+  target = c("reading_neps", "math_neps", "reading_neps", "math_neps"),
   grouping = c("total", "gender", "agegr", "edugr"),
   group = c(0:3)
 ) %>%
@@ -103,7 +116,7 @@ deltas <- deltas %>%
   unnest(results) %>%
   mutate(
     domain = str_extract(target, pattern = "reading|math"),
-    study = str_extract(target, pattern = "neps|piaac")
+    study = str_extract(target, pattern = "neps|neps")
   )
 
 deltas
@@ -153,7 +166,7 @@ cors_pooler <- function(grouping, group, target) {
 
 # Create a tibble for computing the PV-based correlations per subgroup
 cors <- expand_grid(
-  target = c("reading_piaac", "math_piaac", "reading_neps", "math_neps"),
+  target = c("reading_neps", "math_neps", "reading_neps", "math_neps"),
   grouping = c("total", "gender", "agegr", "edugr"),
   group = c(0:3)
 ) %>%
@@ -169,7 +182,7 @@ cors <- cors %>%
   unnest(ergebnis) %>%
   mutate(
     domain = str_extract(target, pattern = "reading|math"),
-    study = str_extract(target, pattern = "neps|piaac")
+    study = str_extract(target, pattern = "neps|neps")
   )
 
 cors
@@ -211,7 +224,7 @@ rci_pooler <- function(grouping, group, target) {
 
 # Create a tibble with combinations of targets and subgroups
 rcis <- expand_grid(
-  target = c("reading_piaac", "math_piaac", "reading_neps", "math_neps"),
+  target = c("reading_neps", "math_neps", "reading_neps", "math_neps"),
   grouping = c("total", "gender", "agegr", "edugr"),
   group = c(0:3)
 ) %>%
@@ -227,7 +240,7 @@ rcis <- rcis %>%
   unnest(ergebnis )%>%
   mutate(
     domain = str_extract(target, pattern = "reading|math"),
-    study = str_extract(target, pattern = "neps|piaac")
+    study = str_extract(target, pattern = "neps|neps")
   )
 
 
@@ -262,8 +275,8 @@ cor_shaper <- function(which.domain, which.study) {
 
 cors.table <-
   bind_cols(
-    read.piaac = cor_shaper("reading", "piaac"),
-    math.piaac = cor_shaper("math", "piaac"),
+    read.neps = cor_shaper("reading", "neps"),
+    math.neps = cor_shaper("math", "neps"),
     read.neps = cor_shaper("reading", "neps"),
     math.neps = cor_shaper("math", "neps"),
     .name_repair = "unique"
@@ -283,7 +296,7 @@ cors.table <-
       "agegr=3" = "55 + years"
     )
   )) %>%
-  select(Group, matches("piaac|neps"))
+  select(Group, matches("neps|neps"))
 
 # Deltas tables
 
@@ -291,33 +304,34 @@ deltas_shaper <- function(which.domain, which.study) {
   delta.name <- glue("delta.{which.study}.{which.domain}")
   ci.name <- glue("ci.{which.study}.{which.domain}")
   sd.name <- glue("sd.{which.study}.{which.domain}")
-  dav.name <- glue("dav.{which.study}.{which.domain}")
+  dz.name <- glue("dz.{which.study}.{which.domain}")
   
   deltas %>%
     filter(study == which.study & domain == which.domain) %>%
     mutate(
-      !!delta.name := str_sub(delta, 1, 3),
+      !!delta.name :=  sprintf("%.2f", delta),
       !!ci.name := str_c(
         "[",
-        str_sub(lower, 1, 3),
+        sprintf("%.2f", lower),
         ", ",
-        str_sub(upper, 1, 3), "]",
+        sprintf("%.2f", upper),
+        "]",
         sep = ""
       ),
-      !!sd.name := str_sub(sd, 1,3),
-      !!dav.name := str_sub(d_av, 1,3),
+      !!sd.name :=  sprintf("%.2f", sd),
+      !!dz.name := sprintf("%.2f", dz),
        Group = str_c(
         grouping, group,
         sep = "="
       ),
     ) %>%
-    select(Group, delta.name, ci.name, sd.name, dav.name)
+    select(Group, delta.name, ci.name, sd.name, dz.name)
 }
 
 deltas.table <-
   bind_cols(
-    read.piaac = deltas_shaper("reading", "piaac"),
-    math.piaac = deltas_shaper("math", "piaac"),
+    read.neps = deltas_shaper("reading", "neps"),
+    math.neps = deltas_shaper("math", "neps"),
     read.neps = deltas_shaper("reading", "neps"),
     math.neps = deltas_shaper("math", "neps"),
     .name_repair = "unique"
@@ -337,7 +351,7 @@ deltas.table <-
       "agegr=3" = "55 + years"
     )
   )) %>%
-  select(Group, matches("piaac|neps"))
+  select(Group, matches("neps|neps"))
 
 
 # Save all results --------------------------------------------------------
@@ -353,4 +367,119 @@ save(cors.table,
 save(deltas.table, 
      file = glue({dirs$results}, "/", "deltas.table.Rda"))
 
-                                    
+
+
+# Plot the results  -------------                                
+cors <- mutate(cors, 
+               Domain = str_detect(target, "math") %>%
+                 factor(levels = c(FALSE, TRUE), 
+                        labels = 
+                          c("Literacy", "Numeracy")), 
+               Group = 
+ str_c(grouping, group, sep = "=") %>% 
+   factor(., 
+                     levels = 
+                       c(
+                         "total=1",
+                         "gender=1",
+                         "gender=2",
+                         "edugr=0",
+                         "edugr=1",
+                         "edugr=2",
+                         "agegr=0",
+                         "agegr=1",
+                         "agegr=2",
+                         "agegr=3"
+                       ),
+labels = c(
+"Total sample",
+"Male",
+"Female",
+"low (ISCED 0–3)",
+"intermediate (ISCED 4/5B)",
+"high (ISCED 5A/6)",
+"18–34 years",
+"35–44 years",
+"45-54 years",
+ "55 + years"
+)))
+
+cors$category <- rep(c("Total sample", "Gender", "Gender", 
+                       "Education", "Education", "Education", 
+                       "Age group", "Age group", "Age group", "Age group")
+                     , 4) 
+cors$category <- factor(cors$category, 
+                        levels = c("Total sample", "Gender", 
+                                   "Education", "Age group"))
+
+# Plot correlations
+cors %>% filter(str_detect(target, "neps"))  %>% 
+  ggplot(aes(x = Group2, y = rho, group = str_detect(target, "math"), 
+             color = domain)) + 
+  geom_pointrange(aes(ymin = lower, ymax = upper), position =
+                    position_dodge(width= 0.25))  +
+  coord_cartesian(ylim = c(0.4, 1)) +
+  facet_wrap(~category, strip.position = "top",
+             scales = "free") +
+  theme(panel.spacing = unit(0, "lines"),
+        strip.background = element_blank(),
+        strip.placement = "outside") 
+  xlab("x-axis label")
+
+  
+# Plot difference scores based on the EAP scores and their SDs 
+neps_d_age <- reading_neps %>% 
+  filter(.imp == 1) %>%
+  ggplot(aes(x= age, y = (eap_w9 - eap_w3) / sd(eap_w3))) + 
+  geom_smooth(span = 0.1, level = 0.95, fill = "#58748F", 
+              color = "#58748F") +
+  #stat_smooth(level = 0.99, span = 0.01) +
+  geom_hline(aes(yintercept = 0)) +
+  expand_limits(y = c(-0.3, 0.3), x = c(25,67)) +
+  xlab(expression(paste("Alter zu ", T[1], " in Jahren"))) +
+  ylab(expression(paste("Veränderung von ", T[1], " zu ", T[2],
+                        " in ", italic("SD")))) +
+  theme(
+    text = element_text(family = "Times"),
+    panel.background = element_rect(fill = "white", color = "black"),
+    axis.title.x = element_text(size = 30, margin = margin(t=20)),
+    axis.title.y = element_text(size = 30, margin = margin(r=20)),
+    axis.text = element_text(size = 20,),
+    axis.line =	element_line(color = "black"),
+    panel.grid.major = element_line(colour = "grey90", size = 0.1)
+  )
+
+
+  ggsave(neps_d_age, filename = "neps_d_age.png",# device = "wmf",
+         path = "./02_results/")
+
+  piaac_d_age <- reading_piaac %>% 
+    group_by(seqid) %>%
+    mutate(t1_eap = mean(t1_pv),
+           t2_eap = mean(t2_pv)) %>%
+    ungroup %>%
+    filter(.imp == 1 ) %>%
+    ggplot(aes(x= age, y = (t2_eap - t1_eap) / sd(t1_eap))) + 
+    stat_smooth(fill = "#58748F", span = 3,
+                color = "#58748F",  fullrange = F) +
+    #stat_smooth(level = 0.99, span = 0.01) +
+    geom_hline(aes(yintercept = 0)) +
+    expand_limits(y = c(-0.3, 0.3), x = c(18,65)) +
+    xlab(expression(paste("Alter zu ", T[1], " in Jahren"))) +
+    ylab(expression(paste("Veränderung von ", T[1], " zu ", T[2],
+                          "in ", italic("SD")))) +
+    theme(
+      text = element_text(family = "Times"),
+      panel.background = element_rect(fill = "white", color = "black"),
+      axis.title.x = element_text(size = 30, margin = margin(t=20)),
+      axis.title.y = element_text(size = 30, margin = margin(r=20)),
+      axis.text = element_text(size = 20,),
+      axis.line =	element_line(color = "black"),
+      panel.grid.major = element_line(colour = "grey90", size = 0.1)
+    )
+  
+    
+  ggsave(piaac_d_age, filename = "piaac_d_age.png",# device = "wmf",
+         path = "./02_results/")
+  
+  

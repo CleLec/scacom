@@ -1,0 +1,210 @@
+---
+title             : "How stable are literacy and numeracy in adulthood?"
+shorttitle        : "Stability fo competencies"
+
+author: 
+  - name          : "Clemens Lechner"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : "B2, 1, 68159 Mannheim"
+    email         : "clemens.lechner@gesis.org"
+    role:         # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+      - Conceptualization
+      - Writing - Original Draft Preparation
+      - Writing - Review & Editing
+  - name          : "Britta Gauly"
+    affiliation   : "1,2"
+    role:
+      - Writing - Review & Editing
+  - name          : "Ai Miyamoto"
+    affiliation   : "1,3"
+    role:
+      - Writing - Review & Editing
+
+
+affiliation:
+  - id            : "1"
+    institution   : "GESIS - Leibniz Institute for the Social Sciences"
+  - id            : "2"
+    institution   : "University of Siegen, Germany"
+
+authornote: |
+  Add complete departmental affiliations .
+
+  Enter author note here.
+
+abstract: |
+  We analysed the stability of competences.
+  
+  <!-- https://tinyurl.com/ybremelq -->
+  
+keywords          : "literacy; numeracy"
+wordcount         : "X"
+
+bibliography      : ["r-references.bib"]
+
+floatsintext      : no
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+linenumbers       : yes
+mask              : no
+draft             : no
+
+documentclass     : "apa6"
+classoption       : "man"
+output            : papaja::apa6_pdf
+header.includes   :
+  - \usepackage{booktabs}
+  - \usepackage{makecell}
+---
+
+```{r setup, include = FALSE}
+library("papaja")
+r_refs("r-references.bib")
+```
+
+```{r analysis-preferences, include= F}
+# Seed for random number generation
+set.seed(0312)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed, 
+                      include=FALSE, warning=FALSE, message=FALSE)
+```
+
+
+
+
+```{r basics, include = FALSE}
+# Set directories
+dirs <- list(
+  main = "D:/Dropbox/Forschung und Lehre/Stability_PIAAC_NEPS",
+  results = "./02_results"
+)
+
+
+# Load required packages
+library(tidyverse)
+library(glue)
+library(sjlabelled)
+library(kableExtra)
+
+# Load data containing the previously estimated plausible values (PVs)
+# and add new column "total" (needed only for simplified computation inside the
+# functions defined next)
+
+# Data containing the plausible values (in long format)
+purrr::map(c(
+  "math_neps.Rda", "reading_neps.Rda",
+  "math_piaac.Rda", "reading_piaac.Rda"
+), load, .GlobalEnv)
+
+# Final results
+load(glue({dirs$results}, "/cors.table.Rda"))
+load(glue({dirs$results}, "/deltas.table.Rda"))
+```
+
+# Tables
+(ref:correlations-caption) Rank-order Stabilities of Literacy and Numeracy
+across three (in PIAAC-L) to six (in NEPS) years of adulthood.
+
+(ref:correlations-note) Pooled results across 10 PVs in each data source. 
+Data are weighted (for details, see Method). 
+
+
+
+\newpage
+
+
+```{r cors, include = T}
+
+options(kableExtra.latex.load_packages = FALSE)
+
+cors.table  %>%
+  mutate(across(.cols = everything(), 
+                ~str_replace_all(., 
+                                 c("\\[" = "{[}",
+                                      "\\]" =  "{]}"
+                                      )))) %>%
+   mutate(across(-c(Group), linebreak)) %>%
+   mutate(across(.cols = everything(), 
+                ~str_replace_all(., "\\[l|\\[r",  "\\[c"))) %>% 
+apa_table(escape = F,  format = "latex",
+         
+          col_spanners = list("PIAAC-L (3 years)" = c(2:3),
+                              "NEPS (6 years)" = c(4:5)),
+          stub_indents = list("Gender" = c(2,3),
+                              "Education" = c(4:6),
+                              "Age Group" = c(7:10)),
+          caption = "(ref:cors-caption)", 
+          note = "(ref:cors-note)",
+          added_stub_head = "Group",
+          col.names = c("Group", rep(c("Literacy", "Numeracy"), 2)),
+          landscape = F
+          ) 
+
+
+```
+\newpage
+
+(ref:deltas-caption) Mean-Level Changes in Literacy and Numeracy
+across three (in PIAAC-L) to six (in NEPS) years of adulthood.
+
+(ref:deltas-note) Pooled results across 10 PVs in each data source. 
+Data are weighted (for details, see Method). 
+
+```{r deltas, include = T}
+
+deltas.broken <- deltas.table %>% 
+  mutate(across(.cols = everything(), 
+                ~str_replace_all(., 
+                                 c("\\[" = "{[}",
+                                      "\\]" =  "{]}"
+                                      )))) %>%
+   mutate(across(-c(Group), linebreak)) %>%
+   mutate(across(.cols = everything(), 
+                ~str_replace_all(., "\\[l|\\[r",  "\\[c")))
+
+
+
+deltas.broken %>% 
+  select(Group, contains("piaac")) %>%
+apa_table(escape = F,  format = "latex",
+          col_spanners = list("Literacy" = c(2:3),
+                              "Numeracy" = c(4:5)),
+          stub_indents = list("Gender" = c(2,3),
+                              "Education" = c(4:6),
+                              "Age Group" = c(7:10)),
+          caption = "(ref:deltas-caption)", 
+          note = "(ref:deltas-note)",
+          added_stub_head = "Group",
+         # col.names = c("Group", rep(c("Literacy", "Numeracy"), 4)),
+          landscape = F
+          ) 
+
+
+deltas.broken %>% 
+  select(Group, contains("neps")) %>%
+apa_table(escape = F,  format = "latex",
+          col_spanners = list("Literacy" = c(2:3),
+                              "Numeracy" = c(4:5)),
+          stub_indents = list("Gender" = c(2,3),
+                              "Education" = c(4:6),
+                              "Age Group" = c(7:10)),
+          caption = "(ref:deltas-caption)", 
+          note = "(ref:deltas-note)",
+          added_stub_head = "Group",
+         # col.names = c("Group", rep(c("Literacy", "Numeracy"), 4)),
+          landscape = F
+          ) 
+
+
+```
+
+# References
+
+\begingroup
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
+
+<div id="refs" custom-style="Bibliography"></div>
+\endgroup
