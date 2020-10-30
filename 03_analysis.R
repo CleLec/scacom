@@ -15,12 +15,14 @@ dirs <- list(
 
 
 # Load required packages
-library(tidyverse)
+library(tidyerse)
 library(glue)
 library(sjlabelled)
 library(mice)
 library(miceadds)
 library(mitools)
+library(srvyr)
+
 
 # Load data containing the previously estimated plausible values (PVs)
 # and add new column "total" (needed only for simplified computation inside the
@@ -39,19 +41,22 @@ map(c(
 
 deltas_pooler <- function(grouping, group, target) {
 
+  require(radiant.data)
   # Get the target data (defined by study and competence domain)
-  # from the global environment and convert it to a imputation list
-  pvlist <- get(target) %>%
+  # from the global environment 
+  # and convert it to a imputation list
+
+  data_filtered <- get(target) %>%
     filter(.data[[grouping]] == {{ group }}) %>%
     split(.$.imp) %>%
     imputationList()
 
   # Switch off messages from mitools
   sink("NUL")
-
-  # Perform analysis of mean-level change and pool it
+  
+  # Compute and pool mean-level change (in raw metric) in the subsample
   deltas <- with(
-    pvlist,
+    data_filtered,
     lm(t2_pv - t1_pv ~ 1,
       weights = weight
     )
@@ -59,25 +64,38 @@ deltas_pooler <- function(grouping, group, target) {
     MIcombine() %>%
     summary()
 
-  dzs <-   with(
-    pvlist,
-    lm((t2_pv - t1_pv) / sd(t2_pv - t1_pv) ~ 1,
+# Compute pooledSDs in the (weighted) total sample 
+# All effect sizes are based on the total sample SD 
+require(radiant.data)
+sds <- get(target) %>%
+ group_by(.imp) %>%
+    summarise(
+      t1 = weighted.sd(t1_pv, weight),
+      pooled = 0.5 * (weighted.sd(t1_pv, weight) + weighted.sd(t2_pv, weight)),
+      delta = weighted.sd(t2_pv - t1_pv, weight)
+    ) %>%
+    summarise(across(where(is.numeric), mean))
+
+#sds <- get(target) %>%
+#  as_survey_design(weights = weight) %>%
+#  group_by(.imp) %>%
+#  summarise(
+#    t1 = survey_sd(t1_pv),
+#    pooled = 0.5 * (survey_sd(t1_pv) + survey_sd(t2_pv)),
+#    delta = survey_sd(t2_pv - t1_pv)
+#  ) %>%
+#  summarise(across(where(is.numeric), mean))
+
+# Compute and pool Cohen's d_av
+  davs <- with(
+    data_filtered,
+    lm((t2_pv - t1_pv) / sds[["pooled"]] ~ 1,  # total sample SD (weighted)
        weights = weight
     )
   ) %>%
     MIcombine() %>%
     summary()  
-
-  # Compute pooled  SDs in the full sample
-
-  sds <- get(target) %>%
-    group_by(.imp) %>%
-    summarise(
-      pooled = 0.5 * (sd(t1_pv) + sd(t2_pv)),
-      delta = sd(t2_pv - t1_pv)
-    ) %>%
-    summarise(across(where(is.numeric), mean))
-
+  
   sink()
 
   # Extract results in tidy format
@@ -86,14 +104,13 @@ deltas_pooler <- function(grouping, group, target) {
     se = deltas[["se"]], # SE of the difference score
     lower = deltas[["(lower"]], # lower bound of difference score
     upper = deltas[["upper)"]], # upper bound
-    sd = sds[["delta"]], # SD of the difference score
-    dz = dzs[["results"]], # Cohen's dz T2-T1 difference score
-    dz_lower = dzs[["(lower"]], # lower bound of Cohen's dz 
-    dz_upper = dzs[["upper)"]], # lower bound of Cohen's dz 
-    dav = delta / sds[["pooled"]], # Cohens's d_av # Alternative way to compute
-    dz2 = delta / sds[["delta"]] # Cohen's d_z    # ...dz and dav
-     )
-
+    sd_t1 = sds[["t1"]], # SD of the first measurement occation (T1)
+    sd_pooled = sds[["pooled"]], # SD of the first measurement occation (T1)
+    sd_delta = sds[["delta"]], # SD of the difference score
+    dav = davs[["results"]], # Cohen's dav (based on pooled SD)
+    dav_lower = davs[["(lower"]], # lower bound of Cohen's dav
+    dav_upper = davs[["upper)"]], # lower bound of Cohen's dav
+)
 
   resultlist
 }
@@ -138,14 +155,14 @@ deltas
 # pools the results across the PVs (imputations) and saves everything including
 
 cors_pooler <- function(grouping, group, target) {
-  pvlist <- get(target) %>%
+  data_filtered <- get(target) %>%
     filter(.data[[grouping]] == {{ group }}) %>%
     split(.$.imp) %>%
     imputationList()
 
   sink("NUL")
 
-  results <- with(pvlist, lm(scale(t2_pv) ~ scale(t1_pv),
+  results <- with(data_filtered, lm(scale(t2_pv) ~ scale(t1_pv),
     weights = weight
   )) %>%
     MIcombine() %>%
@@ -304,7 +321,7 @@ deltas_shaper <- function(which.domain, which.study) {
   delta.name <- glue("delta.{which.study}.{which.domain}")
   ci.name <- glue("ci.{which.study}.{which.domain}")
   sd.name <- glue("sd.{which.study}.{which.domain}")
-  dz.name <- glue("dz.{which.study}.{which.domain}")
+  dav.name <- glue("dav.{which.study}.{which.domain}")
   
   deltas %>%
     filter(study == which.study & domain == which.domain) %>%
@@ -318,14 +335,14 @@ deltas_shaper <- function(which.domain, which.study) {
         "]",
         sep = ""
       ),
-      !!sd.name :=  sprintf("%.2f", sd),
-      !!dz.name := sprintf("%.2f", dz),
+      !!sd.name :=  sprintf("%.2f", sd_pooled),
+      !!dav.name := sprintf("%.2f", dav),
        Group = str_c(
         grouping, group,
         sep = "="
       ),
     ) %>%
-    select(Group, delta.name, ci.name, sd.name, dz.name)
+    select(Group, delta.name, ci.name, sd.name, dav.name)
 }
 
 deltas.table <-
@@ -366,120 +383,3 @@ save(cors.table,
 
 save(deltas.table, 
      file = glue({dirs$results}, "/", "deltas.table.Rda"))
-
-
-
-# Plot the results  -------------                                
-cors <- mutate(cors, 
-               Domain = str_detect(target, "math") %>%
-                 factor(levels = c(FALSE, TRUE), 
-                        labels = 
-                          c("Literacy", "Numeracy")), 
-               Group = 
- str_c(grouping, group, sep = "=") %>% 
-   factor(., 
-                     levels = 
-                       c(
-                         "total=1",
-                         "gender=1",
-                         "gender=2",
-                         "edugr=0",
-                         "edugr=1",
-                         "edugr=2",
-                         "agegr=0",
-                         "agegr=1",
-                         "agegr=2",
-                         "agegr=3"
-                       ),
-labels = c(
-"Total sample",
-"Male",
-"Female",
-"low (ISCED 0–3)",
-"intermediate (ISCED 4/5B)",
-"high (ISCED 5A/6)",
-"18–34 years",
-"35–44 years",
-"45-54 years",
- "55 + years"
-)))
-
-cors$category <- rep(c("Total sample", "Gender", "Gender", 
-                       "Education", "Education", "Education", 
-                       "Age group", "Age group", "Age group", "Age group")
-                     , 4) 
-cors$category <- factor(cors$category, 
-                        levels = c("Total sample", "Gender", 
-                                   "Education", "Age group"))
-
-# Plot correlations
-cors %>% filter(str_detect(target, "neps"))  %>% 
-  ggplot(aes(x = Group, y = rho, group = str_detect(target, "math"), 
-             color = domain)) + 
-  geom_pointrange(aes(ymin = lower, ymax = upper), position =
-                    position_dodge(width= 0.25))  +
-  coord_cartesian(ylim = c(0.4, 1)) +
-  facet_grid(cols = vars(category), #strip.position = "bottom",
-             scales = "free_x", space = "free_x") +
-  theme(#panel.spacing = unit(0, "lines"),
-     #   strip.background = element_blank(),
-       # strip.placement = "outside",
-        axis.text.x = element_text(angle=90, hjust = 1, vjust = 0.5) 
-  )
-  
-# Plot difference scores based on the EAP scores and their SDs 
-neps_d_age <- reading_neps %>% 
-  filter(.imp == 1) %>%
-  ggplot(aes(x= age, y = (eap_w9 - eap_w3) / sd(eap_w3))) + 
-  geom_smooth(span = 0.1, level = 0.95, fill = "#58748F", 
-              color = "#58748F") +
-  #stat_smooth(level = 0.99, span = 0.01) +
-  geom_hline(aes(yintercept = 0)) +
-  expand_limits(y = c(-0.3, 0.3), x = c(25,67)) +
-  xlab(expression(paste("Alter zu ", T[1], " in Jahren"))) +
-  ylab(expression(paste("Veränderung von ", T[1], " zu ", T[2],
-                        " in ", italic("SD")))) +
-  theme(
-    text = element_text(family = "Times"),
-    panel.background = element_rect(fill = "white", color = "black"),
-    axis.title.x = element_text(size = 30, margin = margin(t=20)),
-    axis.title.y = element_text(size = 30, margin = margin(r=20)),
-    axis.text = element_text(size = 20,),
-    axis.line =	element_line(color = "black"),
-    panel.grid.major = element_line(colour = "grey90", size = 0.1)
-  )
-
-
-  ggsave(neps_d_age, filename = "neps_d_age.png",# device = "wmf",
-         path = "./02_results/")
-
-  piaac_d_age <- reading_piaac %>% 
-    group_by(seqid) %>%
-    mutate(t1_eap = mean(t1_pv),
-           t2_eap = mean(t2_pv)) %>%
-    ungroup %>%
-    filter(.imp == 1 ) %>%
-    ggplot(aes(x= age, y = (t2_eap - t1_eap) / sd(t1_eap))) + 
-    stat_smooth(fill = "#58748F", span = 3,
-                color = "#58748F",  fullrange = F) +
-    #stat_smooth(level = 0.99, span = 0.01) +
-    geom_hline(aes(yintercept = 0)) +
-    expand_limits(y = c(-0.3, 0.3), x = c(18,65)) +
-    xlab(expression(paste("Alter zu ", T[1], " in Jahren"))) +
-    ylab(expression(paste("Veränderung von ", T[1], " zu ", T[2],
-                          "in ", italic("SD")))) +
-    theme(
-      text = element_text(family = "Times"),
-      panel.background = element_rect(fill = "white", color = "black"),
-      axis.title.x = element_text(size = 30, margin = margin(t=20)),
-      axis.title.y = element_text(size = 30, margin = margin(r=20)),
-      axis.text = element_text(size = 20,),
-      axis.line =	element_line(color = "black"),
-      panel.grid.major = element_line(colour = "grey90", size = 0.1)
-    )
-  
-    
-  ggsave(piaac_d_age, filename = "piaac_d_age.png",# device = "wmf",
-         path = "./02_results/")
-  
-  

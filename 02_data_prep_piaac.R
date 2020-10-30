@@ -62,7 +62,7 @@ piaacl <- piaac12 %>%
   left_join(., weights15, by = "seqid") %>%
   filter(!is.na(PVLIT1_12_15) & !is.na(PVLIT1_15_15) &
            age >= 18)  %>%
-  mutate(weight = weight12 * bleib_15,
+  mutate(weight = weight12 * bleib_15 / mean(weight12 * bleib_15), #normalize wt
          agegr = if_else(age <= 34, 0,
                          if_else(age > 34 & age <= 44, 1,
                                  if_else(age > 44 & age <= 54, 2, 3)
@@ -70,7 +70,7 @@ piaacl <- piaac12 %>%
          edugr = ifelse(edu %in% c(1:6), 0,
                         ifelse(edu %in% c(7:11), 1,
                                 ifelse(edu %in% c(12:14), 2, NA))))
-
+psych::describe(piaacl$weight)
 rm(list = c("piaac12", "piaacl15", "weights15"))
 # Reshape the data such that
 # - data are in long format (person-period format) for the two waves
