@@ -60,7 +60,7 @@ deltas <- beautify_names(deltas)
 
 # Plot mean-level change (Cohen's dav) -------------------------------------
 
-dodge1 <- position_dodge(width = 0.85)
+dodge1 <- position_dodge(width = 0.9)
 
 deltas_plotter <- function(study) {
   data <- deltas %>%
@@ -80,8 +80,8 @@ deltas_plotter <- function(study) {
       vjust = -0.75,
       size = 4
     ) +
-    geom_hline(yintercept = 0, lty = "dashed") +
-    coord_flip(ylim = c(-0.41, 0.41)) +
+    geom_hline(yintercept = 0, lty = "dashed", color = "#666666") +
+    coord_flip(ylim = c(-0.35, 0.35)) +
     facet_grid(
       rows = vars(heading), # strip.position = "bottom",
       switch = "y",
@@ -99,6 +99,7 @@ deltas_plotter <- function(study) {
     ) +
     jtools::theme_apa() +
     theme(
+      text = element_text(family = "Source Sans Pro"),
       legend.text = element_text(size = 15, face = "bold"),
       legend.position = "top",
       plot.margin = margin(1.25, 0.5, 0.5, 0.5,
@@ -126,7 +127,7 @@ deltas_plotter <- function(study) {
         face = "bold"
       ),
     ) +
-    scale_colour_manual(values = c("dodgerblue3", "red3")) +
+    scale_colour_manual(values = c("#58748F", "#F06400")) +
     scale_y_continuous(
       breaks = seq(from = -0.4, to = 0.4, by = 0.1),
       labels = function(x) sprintf("%.2f", x)
@@ -168,8 +169,8 @@ cors_plotter <- function(study) {
       vjust = -0.75,
       size = 4
     ) +
-    geom_hline(yintercept = 0.7, lty = "dashed") +
-    coord_flip(ylim = c(0.35, 1)) +
+    geom_hline(yintercept = 0.7, lty = "dashed", color = "#666666") +
+    coord_flip(ylim = c(0.39, 1)) +
     facet_grid(
       rows = vars(heading), # strip.position = "bottom",
       switch = "y",
@@ -187,6 +188,7 @@ cors_plotter <- function(study) {
     ) +
     jtools::theme_apa() +
     theme(
+      text = element_text(family = "Source Sans Pro"),
       legend.text = element_text(size = 15, face = "bold"),
       legend.position = "top",
       plot.margin = margin(1.25, 0.5, 0.5, 0.5,
@@ -214,13 +216,16 @@ cors_plotter <- function(study) {
         face = "bold"
       ),
     ) +
-    scale_colour_manual(values = c("dodgerblue3", "red3")) +
+    scale_colour_manual(values = c("#58748F", "#F06400")) +
     scale_y_continuous(
       breaks = seq(from = 0.3, to = 1, by = 0.1),
       labels = function(x) sprintf("%.2f", x)
     )
 }
 
+pdf("test2.pdf", family = "Source Sans Pro",
+    width = 20,
+    height = 10)
 
 cors_plot <- cowplot::plot_grid(
   cors_plotter("piaac"),
@@ -233,17 +238,23 @@ cors_plot <- cowplot::plot_grid(
 
 cors_plot
 
+ggsave("test2.pdf",  plot = cors_plot)
+
+dev.off()
+
 # Plot density distribution of change ---------------------------------------------
 
 delta_density <- function(data) {
 
   # Compute sd at T1 (for computation of Cohen's dav and for coloring the plot)
-
+ require(radiant.data)
+  
   sds <- data %>%
     group_by(.imp) %>%
     summarise(
-      sd_pooled = 0.5 * (sd(t1_pv) + sd(t2_pv)),
-      sd_delta = sd(t2_pv - t1_pv)
+      sd_pooled = 0.5 * (weighted.sd(t1_pv, weight) + 
+                           weighted.sd(t2_pv, weight)),
+      sd_delta = weighted.sd(t2_pv - t1_pv, weight)
     ) %>%
     summarise(sd_pooled = mean(sd_pooled), sd_delta = mean(sd_delta))
 
@@ -263,26 +274,30 @@ delta_density <- function(data) {
     )
 
   plotdata %>% ggplot(aes(x = x, y = y)) +
-    geom_area(aes(fill = direction), alpha = 1) +
+    geom_area(aes(fill = direction),
+              alpha = 1, 
+              show.legend = F) +
     geom_vline(
       xintercept = 0,
       size = 0.5,
-      lty = "dashed"
+      lty = "dashed",
+      color = "#666666"
     ) +
-    geom_line(size = 1.1, color = "black") +
+    geom_line(size = 1.1, color = "#666666") +
     theme_apa() +
     xlab(expression(paste("Change score (", Delta["T2, T1"], ")"))) +
     ylab("Density") +
     theme(
+      text = element_text(family = "Source Sans Pro"),
       axis.title = element_text(size = 20),
       axis.text = element_text(size = 15)
     ) +
-    scale_fill_manual(values = c("grey95", "grey85", "grey85")) +
-    expand_limits(x = c(-3 * sds$sd_pooled, 3 * sds$sd_pooled))
+    scale_fill_manual(values = c("#BDCDD8", "#58748F", "#58748F")) +
+    expand_limits(x = c(-2 * sds$sd_pooled, 2 * sds$sd_pooled))
 }
 
 
-delta_density(math_piaac)
+delta_density(math_neps)
 
 
 #  Plot difference scores over age based on the EAP scores --------
@@ -294,7 +309,7 @@ neps_d_age <- reading_neps %>%
     color = "#58748F"
   ) +
   # stat_smooth(level = 0.99, span = 0.01) +
-  geom_hline(aes(yintercept = 0)) +
+  geom_hline(aes(yintercept = 0), color = "#666666") +
   expand_limits(y = c(-0.3, 0.3), x = c(25, 67)) +
   xlab(expression(paste("Alter zu ", T[1], " in Jahren"))) +
   ylab(expression(paste(
@@ -331,7 +346,7 @@ piaac_d_age <- reading_piaac %>%
     color = "#58748F", fullrange = F
   ) +
   # stat_smooth(level = 0.99, span = 0.01) +
-  geom_hline(aes(yintercept = 0)) +
+  geom_hline(aes(yintercept = 0, color = "#666666")) +
   expand_limits(y = c(-0.3, 0.3), x = c(18, 65)) +
   xlab(expression(paste("Alter zu ", T[1], " in Jahren"))) +
   ylab(expression(paste(
@@ -353,3 +368,5 @@ ggsave(piaac_d_age,
   filename = "piaac_d_age.png", # device = "wmf",
   path = "./02_results/"
 )
+
+
