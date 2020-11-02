@@ -1,3 +1,34 @@
+# Project Info: ----------------------------------------------------------------
+# Lechner et al. (2020). Stability and Change in Literacy and Numeracy
+# Step 4: Reporting the results.
+# This code was written by clemens.lechner@gesis.org
+# R 4.0.3
+
+# Basic settings ---------------------------------------------------------------
+rm(list = ls())
+
+# List of subdirectories
+dirs <- list(
+  main = "D:/Dropbox/Forschung und Lehre/Stability_neps_NEPS",
+  results = "./02_results"
+)
+
+# Load raw data and results
+map(c(
+  "math_neps.Rda", "reading_neps.Rda",
+  "math_piaac.Rda", "reading_piaac.Rda",
+  "./02_results/cors.Rda",
+  "./02_results/deltas.Rda"
+), load, .GlobalEnv)
+
+# Load required packages
+library(tidyverse)
+library(glue)
+library(sjlabelled)
+library(mice)
+library(miceadds)
+library(mitools)
+library(srvyr)
 
 # Rename data -------------------------------------------------------------
 
@@ -147,7 +178,7 @@ deltas_plot <- cowplot::plot_grid(
 deltas_plot
 
 
-# Plot mean-level change (Cohen's dav) -------------------------------------
+# Plot correlations  -------------------------------------
 
 cors_plotter <- function(study) {
   data <- cors %>%

@@ -2,7 +2,7 @@
 # Lechner et al. (2020). Stability and Change in Literacy and Numeracy
 # Step 4: Analyses in neps-L.
 # This code was written by clemens.lechner@gesis.org
-# R 4.0.2
+# R 4.0.3
 
 # Basic settings ---------------------------------------------------------------
 rm(list = ls())
@@ -15,13 +15,13 @@ dirs <- list(
 
 
 # Load required packages
-library(tidyerse)
+library(purrr)
 library(glue)
 library(sjlabelled)
 library(mice)
 library(miceadds)
 library(mitools)
-library(srvyr)
+library(srvyr, lib.loc = "D:/R library")
 
 
 # Load data containing the previously estimated plausible values (PVs)
