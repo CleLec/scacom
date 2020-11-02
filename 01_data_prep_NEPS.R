@@ -5,21 +5,21 @@
 # R 4.0.2
 
 # Basic settings ---------------------------------------------------------------
-
+rm(list= ls())
 # List of directories
 dirs <- list(
   main = "D:/Dropbox/Forschung und Lehre/Stability_PIAAC_NEPS",
   data = "C:/users/lechnecs/Desktop/NEPS SC6 (11-0-0)/SPSS/en/"
 )
 
-setwd(dirs$main)
+#setwd(dirs$main)
 
 # Load required packages
 pckloader <- function(pcklist) {
   for (pckg in pcklist) {
     if (!pckg %in% .packages(all = T)) {
       message("Installing package: ", pckg)
-      install.packages(pckg, dep = T)
+      install.packages(pckg, dep = F)
       library(pckg, character.only = T)
     } else {
       message("Package already installed: ", pckg)
@@ -31,19 +31,25 @@ pckloader <- function(pcklist) {
 # Older version of haven is needed because the katest version creates issues
 # when used in the NEPS PV tool
 # install.packages("devtools")
-# require(devtools)
-# install_version("haven", version = "2.2.0",
+ #require(devtools)
+ #install_version("haven", version = "2.2.0",
 #                repos = "http://cran.us.r-project.org")
 
 # Installing the NEPS PV estimation tool
-# install.packages("http://nocrypt.neps-data.de/r/nepsscaling_1.0.0.tar.gz",
+ #install.packages("http://nocrypt.neps-data.de/r/nepsscaling_1.0.0.tar.gz",
 #                 repos = NULL, type = "source")
 
-pckloader(c(
-  "tidyverse", "sjPlot", "xtable", "glue",
-  "mvtnorm", "ucminf", "numDeriv", "rpart", "haven", "TAM"
-))
-
+library(tidyverse)
+library(sjPlot)
+library(sjlabe)
+library(xtable)
+library(glue)
+library(mvtnorm)
+library(ucminf)
+library(numDeriv)
+library(haven)
+library(TAM)
+ 
 
 # Preparing the data --------------------------------------------------------
 
@@ -113,7 +119,8 @@ data_merged <-
             data_methods,
             by = "ID_t"
   ) %>%
-  select(ID_t,
+  select(ID_t, 
+         mpa3re_sc5, mpa9re_sc5, mpa3ma_sc5, mpa9ma_sc5, #procedural metacognit.
     yborn = tx2900y, gender = t700001, eduyrs = tx28102,
     casmin = tx28101, isced = tx28103, language = tx29003,
     income = t510010_g1, books,
@@ -147,11 +154,11 @@ read_pvs <- plausible_values(
   bgdata = select(
     data_merged,
     ID_t, age, age2, age3, gender,
-    edugr, language, hhsize, books,
+    edugr, language, hhsize, books, income,
     state, townsize, cumemp, fases,
-    math3, science, ict, gf, 
+    math3, science, ict, gf, mpa3re_sc5, mpa9re_sc5
   ),
-  npv = 10,
+  npv = 30,
   longitudinal = TRUE,
   min_valid = 3,
   include_nr = FALSE,
@@ -169,12 +176,12 @@ math_pvs <- plausible_values(
   domain = "MA",
   bgdata = select(
     data_merged,
-    ID_t, age, age2, age3, gender,
+    ID_t, age, age2, age3, gender, income,
     edugr, language, hhsize, books,
     state, townsize, cumemp, fases,
-    read3, science, ict, gf, 
+    read3, science, ict, gf,  mpa3ma_sc5, mpa9ma_sc5,
   ),
-  npv = 10,
+  npv = 30,
   longitudinal = TRUE,
   min_valid = 3,
   include_nr = FALSE,

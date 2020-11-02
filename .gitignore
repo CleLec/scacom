@@ -3,3 +3,9 @@
 .RData
 .Ruserdata
 *.RDA
+*.docx
+*.png
+*.pdf
+*.tex
+*.out
+
