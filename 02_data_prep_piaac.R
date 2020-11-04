@@ -91,7 +91,8 @@ reading_piaac <- piaacl %>%
   ) %>%
   relocate(.imp, before =  seqid) %>%
   rename(t1_pv = '12', t2_pv = '15') %>%
-  mutate(total = 1)   #needed for selecting all observations in the analyses
+  mutate(total = 1, 
+         .imp = as.numeric(.imp))   #needed for selecting all observations in the analyses
   
 
 # Create reshaped math data
@@ -109,7 +110,8 @@ math_piaac <- piaacl %>%
   ) %>%
   relocate(.imp, before =  seqid) %>%
   rename(t1_pv = '12', t2_pv = '15') %>%
-  mutate(total = 1)  #needed for selecting all observations in the analyses
+  mutate(total = 1,   #needed for selecting all observations in the analyses
+         .imp = as.numeric(.imp))
 
 
 # Save the new data in .Rdata ---------------------------------------------
