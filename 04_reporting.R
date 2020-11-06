@@ -29,6 +29,7 @@ library(mice)
 library(miceadds)
 library(mitools)
 library(srvyr)
+library(extrafont)
 
 # Rename data -------------------------------------------------------------
 
