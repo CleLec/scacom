@@ -333,11 +333,11 @@ delta_density(math_neps)
 
 
 #  Plot difference scores over age based on the EAP scores --------
-neps_d_age <- reading_neps %>%
-  filter(.imp == 1) %>%
-  ggplot(aes(x = age, y = (eap_w9 - eap_w3) / sd(eap_w3))) +
+neps_d_age <- math_neps %>%
+  filter(.imp == 2) %>%
+  ggplot(aes(x = age, y = (t2_pv - t1_pv))) +
   geom_smooth(
-    span = 0.1, level = 0.95, fill = "#58748F",
+  #  span = 0.1, level = 0.95, fill = "#58748F",
     color = "#58748F"
   ) +
   # stat_smooth(level = 0.99, span = 0.01) +
@@ -358,6 +358,8 @@ neps_d_age <- reading_neps %>%
     panel.grid.major = element_line(colour = "grey90", size = 0.1)
   )
 
+
+neps_d_age
 
 ggsave(neps_d_age,
   filename = "neps_d_age.png", # device = "wmf",

@@ -158,12 +158,15 @@ read_pvs <- plausible_values(
     state, townsize, cumemp, fases,
     math3, science, ict, gf, mpa3re_sc5, mpa9re_sc5
   ),
-  npv = 30,
+  npv = 20,
   longitudinal = TRUE,
   min_valid = 3,
   include_nr = FALSE,
   verbose = TRUE,
-  control = list(WLE = TRUE, EAP = TRUE)
+  control = list(WLE = TRUE, EAP = TRUE, 
+                 ML = list(nmi = 20,
+                 itermcmc = 200, burnin = 100, thin = 1)
+  )
 )
 
 
@@ -181,12 +184,15 @@ math_pvs <- plausible_values(
     state, townsize, cumemp, fases,
     read3, science, ict, gf,  mpa3ma_sc5, mpa9ma_sc5,
   ),
-  npv = 30,
+  npv = 20,
   longitudinal = TRUE,
   min_valid = 3,
   include_nr = FALSE,
   verbose = TRUE,
-  control = list(WLE = TRUE, EAP = TRUE)
+  control = list(WLE = TRUE, EAP = TRUE, 
+                 ML = list(nmi = 20,
+                           itermcmc = 200, burnin = 100, thin = 1)
+  )
 )
 
 # math_pvlist <- get_pv_list(math_pvs)
