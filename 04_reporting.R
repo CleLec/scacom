@@ -5,21 +5,14 @@
 # R 4.0.3
 
 # Basic settings ---------------------------------------------------------------
-rm(list = ls())
+# rm(list = ls())
 
 # List of subdirectories
 dirs <- list(
-  main = "D:/Dropbox/Forschung und Lehre/Stability_neps_NEPS",
+  main = "D:/Dropbox/Forschung und Lehre/Stability_PIAAC_NEPS",
+  data = "C:/users/lechnecs/Desktop/NEPS SC6 (11-0-0)/SPSS/en/",
   results = "./02_results"
 )
-
-# Load raw data and results
-map(c(
-  "math_neps.Rda", "reading_neps.Rda",
-  "math_piaac.Rda", "reading_piaac.Rda",
-  "./02_results/cors.Rda",
-  "./02_results/deltas.Rda"
-), load, .GlobalEnv)
 
 # Load required packages
 library(tidyverse)
@@ -30,6 +23,16 @@ library(miceadds)
 library(mitools)
 library(srvyr)
 library(extrafont)
+
+# Load raw data and results
+map(c(
+  "math_neps.Rda", "reading_neps.Rda",
+  "math_piaac.Rda", "reading_piaac.Rda",
+  "./02_results/cors.Rda",
+  "./02_results/deltas.Rda"
+), load, .GlobalEnv)
+
+
 
 # Rename data -------------------------------------------------------------
 
@@ -71,7 +74,7 @@ beautify_names <- function(data) {
           )
         ),
     heading = fct_recode(.data$Group,
-      "All" =  "Total\nsample",
+      "All" =  "Total\npopulation",
       "Gender" = "Male",
       "Gender" = "Female",
       "Education" = "low\n(ISCED 0–3)",
@@ -117,10 +120,10 @@ deltas_plotter <- function(study) {
     facet_grid(
       rows = vars(heading), # strip.position = "bottom",
       switch = "y",
-     # cols = NULL,
+      # cols = NULL,
       scales = "free_y",
       space = "free_y",
-     # margins = margin(1, 1, 1, 1, unit = "cm")
+      # margins = margin(1, 1, 1, 1, unit = "cm")
     ) +
     labs(
       # title = "Mean-level changes across 3 years (PIAAC)",
@@ -135,7 +138,7 @@ deltas_plotter <- function(study) {
       legend.text = element_text(size = 15, face = "bold"),
       legend.position = "top",
       plot.margin = margin(1.25, 0.5, 0.5, 0.5,
-                           unit = "cm"
+        unit = "cm"
       ),
       strip.background = element_blank(),
       strip.placement = "outside",
@@ -159,7 +162,9 @@ deltas_plotter <- function(study) {
         face = "bold"
       ),
     ) +
-    scale_colour_manual(values = c("#58748F", "#F06400")) +
+    scale_colour_manual( # values = c("#58748F", "#F06400")) +
+      values = c("#005B96", "#CC0001")
+    ) +
     scale_y_continuous(
       breaks = seq(from = -0.4, to = 0.4, by = 0.1),
       labels = function(x) sprintf("%.2f", x)
@@ -209,7 +214,7 @@ cors_plotter <- function(study) {
       cols = NULL,
       scales = "free_y",
       space = "free",
-     # margins = margin(0.25, 25, 0.25, 0.25, unit = "cm")
+      # margins = margin(0.25, 25, 0.25, 0.25, unit = "cm")
     ) +
     labs(
       # title = "Mean-level changes across 3 years (PIAAC)",
@@ -248,16 +253,14 @@ cors_plotter <- function(study) {
         face = "bold"
       ),
     ) +
-    scale_colour_manual(values = c("#58748F", "#F06400")) +
+    scale_colour_manual( # values = c("#58748F", "#F06400")) +
+      values = c("#005B96", "#CC0001")
+    ) +
     scale_y_continuous(
       breaks = seq(from = 0.3, to = 1, by = 0.1),
       labels = function(x) sprintf("%.2f", x)
     )
 }
-
-pdf("test2.pdf", family = "Source Sans Pro",
-    width = 20,
-    height = 10)
 
 cors_plot <- cowplot::plot_grid(
   cors_plotter("piaac"),
@@ -270,45 +273,52 @@ cors_plot <- cowplot::plot_grid(
 
 cors_plot
 
-ggsave("test2.pdf",  plot = cors_plot)
+pdf("cors.pdf",
+    family = "Source Sans Pro",
+    width = 20,
+    height = 10
+)
+
+ggsave("cors.pdf", plot = deltas_plot)
 
 dev.off()
 
 # Plot density distribution of change ---------------------------------------------
 
 delta_density <- function(data) {
-
+  
   # Compute sd at T1 (for computation of Cohen's dav and for coloring the plot)
- require(radiant.data)
+  require(radiant.data)
   
   sds <- data %>%
     group_by(.imp) %>%
     summarise(
-      sd_pooled = 0.5 * (weighted.sd(t1_pv, weight) + 
+      sd_pooled = 0.5 * (weighted.sd(t1_pv, weight) +
                            weighted.sd(t2_pv, weight)),
       sd_delta = weighted.sd(t2_pv - t1_pv, weight)
     ) %>%
     summarise(sd_pooled = mean(sd_pooled), sd_delta = mean(sd_delta))
-
+  
   # Compute deltas (t2-t1) based on the EAP scores
   plotdata <- data %>%
     # group_by(seqid) %>%
     mutate(delta = t1_pv - t2_pv) %>%
     # filter(.imp == 1) %>%
     ungroup()
-
+  
   # Compute densities for each delta value
   plotdata <- with(density(plotdata$delta), tibble(x, y)) %>%
     mutate(
       direction = ifelse(x <= -0.8 * sds[["sd_pooled"]], "neg",
-        ifelse(x >= 0.8 * sds[["sd_pooled"]], "pos", "little")
+                         ifelse(x >= 0.8 * sds[["sd_pooled"]], "pos", "little")
       )
     )
-
+  
   plotdata %>% ggplot(aes(x = x, y = y)) +
     geom_area(aes(fill = direction),
-              alpha = 1, 
-              show.legend = F) +
+              alpha = 1,
+              show.legend = F
+    ) +
     geom_vline(
       xintercept = 0,
       size = 0.5,
@@ -334,10 +344,10 @@ delta_density(math_neps)
 
 #  Plot difference scores over age based on the EAP scores --------
 neps_d_age <- math_neps %>%
-  filter(.imp == 2) %>%
-  ggplot(aes(x = age, y = (t2_pv - t1_pv))) +
+  filter(.imp == 4) %>%
+  ggplot(aes(x = as.factor(agegr), y = t2_pv - t1_pv )) +
   geom_smooth(
-  #  span = 0.1, level = 0.95, fill = "#58748F",
+    span = 0.1, level = 0.95, fill = "#58748F",
     color = "#58748F"
   ) +
   # stat_smooth(level = 0.99, span = 0.01) +
@@ -362,8 +372,8 @@ neps_d_age <- math_neps %>%
 neps_d_age
 
 ggsave(neps_d_age,
-  filename = "neps_d_age.png", # device = "wmf",
-  path = "./02_results/"
+       filename = "neps_d_age.png", # device = "wmf",
+       path = "./02_results/"
 )
 
 piaac_d_age <- reading_piaac %>%
@@ -399,8 +409,6 @@ piaac_d_age <- reading_piaac %>%
 
 
 ggsave(piaac_d_age,
-  filename = "piaac_d_age.png", # device = "wmf",
-  path = "./02_results/"
+       filename = "piaac_d_age.png", # device = "wmf",
+       path = "./02_results/"
 )
-
-

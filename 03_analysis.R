@@ -5,11 +5,12 @@
 # R 4.0.3
 
 # Basic settings ---------------------------------------------------------------
-rm(list = ls())
+#rm(list = ls())
 
 # List of subdirectories
 dirs <- list(
-  main = "D:/Dropbox/Forschung und Lehre/Stability_neps_NEPS",
+  main = "D:/Dropbox/Forschung und Lehre/Stability_PIAAC_NEPS",
+  data = "C:/users/lechnecs/Desktop/NEPS SC6 (11-0-0)/SPSS/en/",
   results = "./02_results"
 )
 
@@ -22,7 +23,8 @@ library(sjlabelled)
 library(mice)
 library(miceadds)
 library(mitools)
-library(srvyr, lib.loc = "D:/R library")
+library(srvyr)
+#library(srvyr, lib.loc = "D:/R library")
 
 
 # Load data containing the previously estimated plausible values (PVs)
@@ -33,6 +35,7 @@ map(c(
   "math_neps.Rda", "reading_neps.Rda",
   "math_piaac.Rda", "reading_piaac.Rda"
 ), load, .GlobalEnv)
+
 
 # Analyzing mean-level change in competences ------------------------------
 
@@ -131,8 +134,10 @@ deltas <- expand_grid(
 deltas <- deltas %>%
   rowwise() %>%
   mutate(results = list(deltas_pooler(grouping, group, target))) %>%
-  unnest(results) %>%
-  mutate(
+  unnest(results)
+
+deltas <- 
+  mutate(deltas, 
     domain = str_extract(target, pattern = "reading|math"),
     study = str_extract(target, pattern = "neps|piaac")
   )
@@ -197,8 +202,9 @@ cors <- expand_grid(
 cors <- cors %>%
   rowwise() %>%
   mutate(ergebnis = list(cors_pooler(grouping, group, target))) %>%
-  unnest(ergebnis) %>%
-  mutate(
+  unnest(ergebnis) 
+
+cors <- mutate(cors, 
     domain = str_extract(target, pattern = "reading|math"),
     study = str_extract(target, pattern = "neps|piaac")
   )
@@ -248,7 +254,7 @@ rcis <- expand_grid(
 ) %>%
   filter(!(grouping == "gender" & group %in% c(0, 3)) &
     !(grouping == "edugr" & group == 3) &
-    !(grouping == "total" & group != 1)) %>%
+      !(grouping == "total" & group != 1)) %>%
   arrange(desc(target), desc(grouping), group)
 
 # Map the function to the tibble to obtain the results
@@ -338,7 +344,7 @@ deltas_shaper <- function(which.domain, which.study) {
       ),
       !!sd.name :=  sprintf("%.2f", sd_pooled),
       !!dav.name := sprintf("%.2f", dav),
-       Group = str_c(
+      Group = str_c(
         grouping, group,
         sep = "="
       ),
