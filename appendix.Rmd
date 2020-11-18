@@ -1,4 +1,5 @@
-# Supplementary Tables and Figures
+
+# Supplementary Tables and Figures.
 
 ```{r setup2, include = FALSE}
 # Load required packages
@@ -27,6 +28,7 @@ map(c(
 ), load, .GlobalEnv)
 ```
 
+\newpage
 
 (ref:tableS1-caption) Skills and skill change in the two sample (after weighting).
 
@@ -71,10 +73,9 @@ cors_t1_delta <- cors_t1_delta %>%
   unnest(ergebnis) %>%
   mutate(
     domain = str_extract(target, pattern = "reading|math"),
-    study = str_extract(target, pattern = "neps|piaac")
+    study = str_extract(target, pattern = "neps|piaac"), 
+    CI = str_c("[", round(lower,2),"; ", round(upper, 2), "]")
   )
-
-#cors_t1_delta
 
 # Combine descriptive statistics about change in a reduced and formatted table
 skills_descriptives <- deltas %>%
@@ -118,6 +119,7 @@ apa_table(skills_descriptives,
 )
 ```
 
+\newpage
 
 (ref:figureS1-caption) Cross-sectional age profiles of literacy and numeracy skills at $T_1$. The gray horizontal line represents the sample mean. 
 
@@ -199,6 +201,7 @@ plot_grid(
 )
 ```
 
+\newpage
 (ref:figureS2-caption) Distribution of the change scores ($\Delta{T_1, T_2)}$. The gray horizontal line represents "no change". The dark blue areas represent change greater than 0.8 *SD*, which is conventionally seen as a "large" effect. 
 
 ```{r figureS2, echo = FALSE, warning = FALSE, fig.cap = "(ref:figureS2-caption)"}
