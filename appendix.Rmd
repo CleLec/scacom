@@ -1,0 +1,277 @@
+# Supplementary Tables and Figures
+
+```{r setup2, include = FALSE}
+# Load required packages
+
+library(kableExtra)
+library(extrafont) 
+library(papaja)
+library(tidyverse)
+library(glue)
+library(sjlabelled)
+library(mice)
+library(miceadds)
+library(mitools)
+library(srvyr)
+library(cowplot)
+
+# BibLateX Reference file
+r_refs("r-references.bib")
+
+# Load raw data and results
+map(c(
+  "math_neps.Rda", "reading_neps.Rda",
+  "math_piaac.Rda", "reading_piaac.Rda",
+  "./02_results/cors.Rda",
+  "./02_results/deltas.Rda"
+), load, .GlobalEnv)
+```
+
+
+(ref:tableS1-caption) Skills and skill change in the two sample (after weighting).
+
+```{r tableS1, echo = FALSE}
+# Merge information about change in literacy and numeracy per study
+# i.e., combine the information for both domains
+# Compute pooled correlations between change (delta) and initial level (t1)
+cors_pooler2 <- function(target) {
+  data_filtered <- get(target) %>%
+    split(.$.imp) %>%
+    imputationList()
+
+  sink("NUL")
+
+  results <- with(data_filtered, lm(scale(t2_pv - t1_pv) ~ scale(t1_pv),
+    weights = weight
+  )) %>%
+    MIcombine() %>%
+    summary()
+
+  sink()
+
+  resultlist <- tibble(
+    rho = results[["results"]][2],
+    se = results[["se"]][2],
+    lower = results[["(lower"]][2],
+    upper = results[["upper)"]][2]
+  )
+
+  resultlist
+}
+
+# Create a tibble for computing the PV-based correlations of t1 with delta
+cors_t1_delta <- tibble(
+  target = c("reading_neps", "math_neps", "reading_piaac", "math_piaac"),
+)
+
+# Map the function to the tibble to obtain the results
+cors_t1_delta <- cors_t1_delta %>%
+  rowwise() %>%
+  mutate(ergebnis = list(cors_pooler2(target))) %>%
+  unnest(ergebnis) %>%
+  mutate(
+    domain = str_extract(target, pattern = "reading|math"),
+    study = str_extract(target, pattern = "neps|piaac")
+  )
+
+#cors_t1_delta
+
+# Combine descriptive statistics about change in a reduced and formatted table
+skills_descriptives <- deltas %>%
+  filter(grouping == "total") %>%
+  select(target, t1, sd_t1, t2, sd_t2, delta, sd_delta) %>%
+  arrange(-grepl("piaac", target)) %>%
+  pivot_longer(!target) %>%
+  mutate(
+    study = str_extract(target, "piaac|neps"),
+    domain = str_extract(target, "math|reading")
+  ) %>%
+  select(-target) %>%
+  pivot_wider(names_from = c(study, domain), values_from = c(value)) %>%
+  mutate(name = str_replace_all(
+    name,
+    c(
+      "sd_t[12]|sd_delta" = "\\\\emph{SD}",
+      "t[12]_{0}|delta" = "\\\\emph{M}"
+    )
+  )) %>%
+  select(
+    Parameter = name,
+    "Literacy" = piaac_reading,
+    "Numeracy" = piaac_math,
+    "Reading" = neps_reading,
+    "Math" = neps_math
+  )
+
+apa_table(skills_descriptives,
+  col_spanners =
+    list("\\makecell[c]{PIAAC-L\\\\(3 years)}" = c(2, 3), "\\makecell[c]{NEPS\\\\(6 years)}" = c(4, 5)),
+  stub_indents = list(
+    "Skill level at $T_1$" = c(1:2),
+    "Skill level at $T_2$" = c(3:4),
+    "Skill change ($\\Delta{T_1, T_2}$)" = c(5:6)
+  ),
+  escape = F,
+  caption = "(ref:tableS1-caption)",
+  font_size = "small",
+  note = "All values are pooled across 10 (20) PVs in PIAAC-L (NEPS)."
+)
+```
+
+
+(ref:figureS1-caption) Cross-sectional age profiles of literacy and numeracy skills at $T_1$. The gray horizontal line represents the sample mean. 
+
+```{r figureS1, echo = FALSE, warning = FALSE, fig.cap = "(ref:figureS1-caption)"}
+
+ageplot <- function(data) {
+
+  # Compute skill mean, min and max at T1 - then pool the data across PVs
+
+  plotdata <- get(data)
+  t1skills <- plotdata %>%
+    group_by(.imp) %>%
+    summarise(
+      Mean = mean(t1_pv),
+      Min = min(t1_pv),
+      Max = max(t1_pv)
+    ) %>%
+    summarise(across(where(is.numeric), mean))
+
+
+  domain <- if_else(grepl("reading", data), "Literacy", "Numeracy")
+
+  plotlims <- list(
+  upper = ifelse(grepl("piaac", data),
+        300, 1),
+  lower = ifelse(grepl("piaac", data),
+        250,
+        -1)
+    )
+  
+  # Plot the age profile based on the first PV
+  ageplot <- plotdata %>%
+    filter(.imp == 1) %>%
+    ggplot(aes(x = age, y = t1_pv)) +
+    expand_limits(
+       y = c(plotlims$lower, plotlims$upper),
+      x = c(18, 67)
+    ) +
+    geom_smooth(
+      #span = 0.1, level = 0.95, 
+      fill = "#58748F", color = "#58748F"
+    ) +
+
+    # stat_smooth(level = 0.99, span = 0.01) +
+    geom_hline(aes(yintercept = t1skills[["Mean"]]), color = "#666666") +
+    xlab(expression(paste("Age at ", T[1], " in years"))) +
+    ylab(expression(paste("Skill level at ", T[1]))) +
+    # scale_y_continuous(breaks =
+    #                     ifelse(grepl("piaac", data),
+    #                     seq(250, 300),
+    #                     seq(-1, 1))
+    #                     ) +
+    theme(
+      text = element_text(family = "Source Sans Pro"),
+      panel.background = element_rect(fill = "white", color = "black"),
+      axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+      axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+      axis.text = element_text(size = 12),
+      axis.line = element_line(color = "black"),
+      panel.grid.major = element_line(colour = "grey90", size = 0.1),
+      plot.margin = margin(1, 0.5, 0.5, 0.5, "cm")
+    )
+
+  ageplot
+}
+
+plot_grid(
+  ageplot("reading_piaac"),
+  ageplot("reading_neps"),
+  ageplot("math_piaac"),
+  ageplot("math_neps"),
+  labels = c(
+    "Literacy (PIAAC-L)", "Literacy (NEPS)", 
+     "Numeracy (PIAAC-L)", "Numeracy (NEPS)"
+  ),
+  label_size = 15,
+  label_fontfamily = "Source Sans Pro",
+  label_y = 1
+)
+```
+
+(ref:figureS2-caption) Distribution of the change scores ($\Delta{T_1, T_2)}$. The gray horizontal line represents "no change". The dark blue areas represent change greater than 0.8 *SD*, which is conventionally seen as a "large" effect. 
+
+```{r figureS2, echo = FALSE, warning = FALSE, fig.cap = "(ref:figureS2-caption)"}
+
+delta_density <- function(data) {
+  
+  data <- get(data)
+  # Compute sd at T1 (for computation of Cohen's dav and for coloring the plot)
+  require(radiant.data)
+  
+  sds <- data %>%
+    group_by(.imp) %>%
+    summarise(
+      sd_pooled = 0.5 * (weighted.sd(t1_pv, weight) +
+                           weighted.sd(t2_pv, weight)),
+      sd_delta = weighted.sd(t2_pv - t1_pv, weight)
+    ) %>%
+    summarise(sd_pooled = mean(sd_pooled), sd_delta = mean(sd_delta))
+  
+  # Compute deltas (t2-t1) based on the EAP scores
+  plotdata <- data %>% ungroup %>%
+    # group_by(seqid) %>%
+    mutate(delta = t1_pv - t2_pv)
+    
+    # Compute densities for each delta value and categorize them according to  whether they exeed a "large" effect.
+  plotdata <- with(density(plotdata$delta), tibble(x, y)) %>%
+    mutate(
+      direction = ifelse(x <= -0.8 * sds[["sd_pooled"]], "neg",
+                         ifelse(x >= 0.8 * sds[["sd_pooled"]], "pos", "little")
+      )
+    )
+  
+  # Create a density plot
+ plotted <- plotdata %>% ggplot(aes(x = x, y = y)) +
+    geom_area(aes(fill = direction),
+              alpha = 1,
+              show.legend = F
+    ) +
+    geom_vline(
+      xintercept = 0,
+      size = 0.5,
+      lty = "dashed",
+      color = "#666666"
+    ) +
+    geom_line() +
+    theme_apa() +
+    xlab(expression(paste("Change score (", Delta, "T2, T1", ")"))) +
+    ylab("Density") +
+    theme(
+      text = element_text(family = "Source Sans Pro"),
+      axis.title = element_text(size = 12),
+      axis.text = element_text(size = 12),
+      plot.margin = margin(1, 0.5, 0.5, 0.5, "cm")
+    ) +
+    scale_fill_manual(values = c("#BDCDD8", "#58748F", "#58748F")) +
+    expand_limits(x = c(-2 * sds$sd_pooled, 2 * sds$sd_pooled))
+  
+ return(plotted)
+ 
+}
+
+plot_grid(
+  delta_density("reading_piaac"),
+  delta_density("reading_neps"),
+  delta_density("math_piaac"),
+  delta_density("math_neps"),
+   labels = c(
+    "Literacy (PIAAC-L)", "Literacy (NEPS)", 
+     "Numeracy (PIAAC-L)", "Numeracy (NEPS)"
+  ),
+  label_size = 15,
+  label_fontfamily = "Source Sans Pro",
+  label_y = 1
+  )
+
+```

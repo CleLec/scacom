@@ -68,6 +68,24 @@ deltas_pooler <- function(grouping, group, target) {
     MIcombine() %>%
     summary()
 
+  t1 <- with(
+    data_filtered,
+    lm(t1_pv ~ 1,
+       weights = weight
+    )
+  ) %>%
+    MIcombine() %>%
+    summary()
+  
+  t2 <- with(
+    data_filtered,
+    lm(t2_pv ~ 1,
+       weights = weight
+    )
+  ) %>%
+    MIcombine() %>%
+    summary()
+  
 # Compute pooledSDs in the (weighted) total sample 
 # All effect sizes are based on the total sample SD 
 require(radiant.data)
@@ -75,6 +93,7 @@ sds <- get(target) %>%
  group_by(.imp) %>%
     summarise(
       t1 = weighted.sd(t1_pv, weight),
+      t2 = weighted.sd(t2_pv, weight),
       pooled = 0.5 * (weighted.sd(t1_pv, weight) + weighted.sd(t2_pv, weight)),
       delta = weighted.sd(t2_pv - t1_pv, weight)
     ) %>%
@@ -108,7 +127,10 @@ sds <- get(target) %>%
     se = deltas[["se"]], # SE of the difference score
     lower = deltas[["(lower"]], # lower bound of difference score
     upper = deltas[["upper)"]], # upper bound
+    t1 = t1[["results"]],
+    t2 = t2[["results"]],
     sd_t1 = sds[["t1"]], # SD of the first measurement occation (T1)
+    sd_t2 = sds[["t2"]], # SD of the second measurement occation (T2)
     sd_pooled = sds[["pooled"]], # SD of the first measurement occation (T1)
     sd_delta = sds[["delta"]], # SD of the difference score
     dav = davs[["results"]], # Cohen's dav (based on pooled SD)

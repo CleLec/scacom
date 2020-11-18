@@ -179,9 +179,9 @@ deltas_plot <- cowplot::plot_grid(
   align = "h",
   hjust = -0.1,
   label_size = 18
+
 )
 
-deltas_plot
 
 
 # Plot correlations  -------------------------------------
@@ -271,144 +271,19 @@ cors_plot <- cowplot::plot_grid(
   label_size = 18
 )
 
-cors_plot
+#cors_plot
 
-pdf("cors.pdf",
-    family = "Source Sans Pro",
-    width = 20,
-    height = 10
-)
+#pdf("cors.pdf",
+#    family = "Source Sans Pro",
+#    width = 20,
+#    height = 10
+#)
 
-ggsave("cors.pdf", plot = deltas_plot)
+#ggsave("cors.pdf", plot = deltas_plot)
 
-dev.off()
+#dev.off()
 
 # Plot density distribution of change ---------------------------------------------
-
-delta_density <- function(data) {
-  
-  # Compute sd at T1 (for computation of Cohen's dav and for coloring the plot)
-  require(radiant.data)
-  
-  sds <- data %>%
-    group_by(.imp) %>%
-    summarise(
-      sd_pooled = 0.5 * (weighted.sd(t1_pv, weight) +
-                           weighted.sd(t2_pv, weight)),
-      sd_delta = weighted.sd(t2_pv - t1_pv, weight)
-    ) %>%
-    summarise(sd_pooled = mean(sd_pooled), sd_delta = mean(sd_delta))
-  
-  # Compute deltas (t2-t1) based on the EAP scores
-  plotdata <- data %>%
-    # group_by(seqid) %>%
-    mutate(delta = t1_pv - t2_pv) %>%
-    # filter(.imp == 1) %>%
-    ungroup()
-  
-  # Compute densities for each delta value
-  plotdata <- with(density(plotdata$delta), tibble(x, y)) %>%
-    mutate(
-      direction = ifelse(x <= -0.8 * sds[["sd_pooled"]], "neg",
-                         ifelse(x >= 0.8 * sds[["sd_pooled"]], "pos", "little")
-      )
-    )
-  
-  plotdata %>% ggplot(aes(x = x, y = y)) +
-    geom_area(aes(fill = direction),
-              alpha = 1,
-              show.legend = F
-    ) +
-    geom_vline(
-      xintercept = 0,
-      size = 0.5,
-      lty = "dashed",
-      color = "#666666"
-    ) +
-    geom_line(size = 1.1, color = "#666666") +
-    theme_apa() +
-    xlab(expression(paste("Change score (", Delta["T2, T1"], ")"))) +
-    ylab("Density") +
-    theme(
-      text = element_text(family = "Source Sans Pro"),
-      axis.title = element_text(size = 20),
-      axis.text = element_text(size = 15)
-    ) +
-    scale_fill_manual(values = c("#BDCDD8", "#58748F", "#58748F")) +
-    expand_limits(x = c(-2 * sds$sd_pooled, 2 * sds$sd_pooled))
-}
+# Moved to appendix.Rmd
 
 
-delta_density(math_neps)
-
-
-#  Plot difference scores over age based on the EAP scores --------
-neps_d_age <- math_neps %>%
-  filter(.imp == 4) %>%
-  ggplot(aes(x = as.factor(agegr), y = t2_pv - t1_pv )) +
-  geom_smooth(
-    span = 0.1, level = 0.95, fill = "#58748F",
-    color = "#58748F"
-  ) +
-  # stat_smooth(level = 0.99, span = 0.01) +
-  geom_hline(aes(yintercept = 0), color = "#666666") +
-  expand_limits(y = c(-0.3, 0.3), x = c(25, 67)) +
-  xlab(expression(paste("Alter zu ", T[1], " in Jahren"))) +
-  ylab(expression(paste(
-    "Veränderung von ", T[1], " zu ", T[2],
-    " in ", italic("SD")
-  ))) +
-  theme(
-    text = element_text(family = "Times"),
-    panel.background = element_rect(fill = "white", color = "black"),
-    axis.title.x = element_text(size = 30, margin = margin(t = 20)),
-    axis.title.y = element_text(size = 30, margin = margin(r = 20)),
-    axis.text = element_text(size = 20, ),
-    axis.line = element_line(color = "black"),
-    panel.grid.major = element_line(colour = "grey90", size = 0.1)
-  )
-
-
-neps_d_age
-
-ggsave(neps_d_age,
-       filename = "neps_d_age.png", # device = "wmf",
-       path = "./02_results/"
-)
-
-piaac_d_age <- reading_piaac %>%
-  group_by(seqid) %>%
-  mutate(
-    t1_eap = mean(t1_pv),
-    t2_eap = mean(t2_pv)
-  ) %>%
-  ungroup() %>%
-  filter(.imp == 1) %>%
-  ggplot(aes(x = age, y = (t2_eap - t1_eap) / sd(t1_eap))) +
-  stat_smooth(
-    fill = "#58748F", span = 3,
-    color = "#58748F", fullrange = F
-  ) +
-  # stat_smooth(level = 0.99, span = 0.01) +
-  geom_hline(aes(yintercept = 0, color = "#666666")) +
-  expand_limits(y = c(-0.3, 0.3), x = c(18, 65)) +
-  xlab(expression(paste("Alter zu ", T[1], " in Jahren"))) +
-  ylab(expression(paste(
-    "Veränderung von ", T[1], " zu ", T[2],
-    "in ", italic("SD")
-  ))) +
-  theme(
-    text = element_text(family = "Times"),
-    panel.background = element_rect(fill = "white", color = "black"),
-    axis.title.x = element_text(size = 30, margin = margin(t = 20)),
-    axis.title.y = element_text(size = 30, margin = margin(r = 20)),
-    axis.text = element_text(size = 20, ),
-    axis.line = element_line(color = "black"),
-    panel.grid.major = element_line(colour = "grey90", size = 0.1)
-  )
-
-
-ggsave(piaac_d_age,
-       filename = "piaac_d_age.png", # device = "wmf",
-       path = "./02_results/"
-)

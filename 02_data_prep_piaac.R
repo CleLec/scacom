@@ -5,7 +5,7 @@
 # R 4.0.2
 
 # Basic settings ---------------------------------------------------------------
-rm(list = ls())
+#rm(list = ls())
 
 # List of directories
 dirs <- list(
@@ -28,7 +28,8 @@ piaac12 <- read_spss(glue(
   },
   "/ZA5845_v2-2-0.sav"
 )) %>%
-  select(seqid = SEQID, age = AGE_R, gender = GENDER_R, weight12 = SPFWT0)
+  select(seqid = SEQID, age = AGE_R, gender = GENDER_R, weight12 = SPFWT0,
+         hhsize = J_Q01_T2, language = NATIVESPEAKER)
 
 # PIAAC-L 2012 - contains competence data, education, and other things
 piaacl15 <- read_spss(glue(
