@@ -1,36 +1,9 @@
 
 # Supplementary Tables and Figures.
 
-```{r setup2, include = FALSE}
-# Load required packages
-
-library(kableExtra)
-library(extrafont) 
-library(papaja)
-library(tidyverse)
-library(glue)
-library(sjlabelled)
-library(mice)
-library(miceadds)
-library(mitools)
-library(srvyr)
-library(cowplot)
-
-# BibLateX Reference file
-r_refs("r-references.bib")
-
-# Load raw data and results
-map(c(
-  "math_neps.Rda", "reading_neps.Rda",
-  "math_piaac.Rda", "reading_piaac.Rda",
-  "./02_results/cors.Rda",
-  "./02_results/deltas.Rda"
-), load, .GlobalEnv)
-```
-
 \newpage
 
-(ref:tableS1-caption) Skills and skill change in the two sample (after weighting).
+(ref:tableS1-caption) Skills and skill change in the two samples (after weighting).
 
 ```{r tableS1, echo = FALSE}
 # Merge information about change in literacy and numeracy per study
@@ -118,12 +91,40 @@ apa_table(skills_descriptives,
   note = "All values are pooled across 10 (20) PVs in PIAAC-L (NEPS)."
 )
 ```
+\newpage
+
+(ref:tableS2-caption) Linear age differences in literacy and numeracy skills as estimated from the cross-sectional ($T_1$) data.
+
+```{r tableS2, echo = F, warning = F}
+# Table is sourced from 04_reporting.R
+#source("04_reporting.R")
+
+age_effects %>% 
+rename("Linear age effect" = Change) %>%
+apa_table(
+  col.names = c("Linear age effect", rep(c("Literacy", "Numeracy"), 2)),
+  col_spanners =
+    list("PIAAC-L" = c(2, 3),
+         "NEPS" = c(4, 5)),
+  stub_indents = list(
+    "For one year" = c(1:2),
+    "For the study period" = c(3:4),
+    "For one decade" = c(5:6)
+  ),
+  escape = F,
+  caption = "(ref:tableS2-caption)",
+  align = "lcccc",
+  font_size = "small",
+  note = "Cross-sectional age differences in skills  estimated from a linear model regressing $T_1$ skill level on age. The study period was three years in PIAAC-L and six years in NEPS. \"$SD$\" refers to change in the standard deviations of the respective skill at $T_1$. All estimates are pooled across the 10 (20) PVs." 
+)
+
+```
 
 \newpage
 
 (ref:figureS1-caption) Cross-sectional age profiles of literacy and numeracy skills at $T_1$. The gray horizontal line represents the sample mean. 
 
-```{r figureS1, echo = FALSE, warning = FALSE, fig.cap = "(ref:figureS1-caption)"}
+```{r figureS1, echo = FALSE, warning = FALSE, fig.dim = c(8,7), fig.cap = "(ref:figureS1-caption)"}
 
 ageplot <- function(data) {
 
@@ -160,7 +161,7 @@ ageplot <- function(data) {
     ) +
     geom_smooth(
       #span = 0.1, level = 0.95, 
-      fill = "#58748F", color = "#58748F"
+      fill = "#005B96", color = "#005B96"
     ) +
 
     # stat_smooth(level = 0.99, span = 0.01) +
@@ -175,9 +176,9 @@ ageplot <- function(data) {
     theme(
       text = element_text(family = "Source Sans Pro"),
       panel.background = element_rect(fill = "white", color = "black"),
-      axis.title.x = element_text(size = 12, margin = margin(t = 10)),
-      axis.title.y = element_text(size = 12, margin = margin(r = 10)),
-      axis.text = element_text(size = 12),
+      axis.title.x = element_text(size = 10, margin = margin(t = 10)),
+      axis.title.y = element_text(size = 10, margin = margin(r = 10)),
+      axis.text = element_text(size = 10),
       axis.line = element_line(color = "black"),
       panel.grid.major = element_line(colour = "grey90", size = 0.1),
       plot.margin = margin(1, 0.5, 0.5, 0.5, "cm")
@@ -195,16 +196,17 @@ plot_grid(
     "Literacy (PIAAC-L)", "Literacy (NEPS)", 
      "Numeracy (PIAAC-L)", "Numeracy (NEPS)"
   ),
-  label_size = 15,
+  label_size = 12,
   label_fontfamily = "Source Sans Pro",
   label_y = 1
 )
 ```
 
 \newpage
+
 (ref:figureS2-caption) Distribution of the change scores ($\Delta{T_1, T_2)}$. The gray horizontal line represents "no change". The dark blue areas represent change greater than 0.8 *SD*, which is conventionally seen as a "large" effect. 
 
-```{r figureS2, echo = FALSE, warning = FALSE, fig.cap = "(ref:figureS2-caption)"}
+```{r figureS2, echo = FALSE, warning = FALSE, fig.dim = c(8,7), fig.cap = "(ref:figureS2-caption)"}
 
 delta_density <- function(data) {
   
@@ -252,11 +254,11 @@ delta_density <- function(data) {
     ylab("Density") +
     theme(
       text = element_text(family = "Source Sans Pro"),
-      axis.title = element_text(size = 12),
-      axis.text = element_text(size = 12),
+      axis.title = element_text(size = 10),
+      axis.text = element_text(size = 10),
       plot.margin = margin(1, 0.5, 0.5, 0.5, "cm")
     ) +
-    scale_fill_manual(values = c("#BDCDD8", "#58748F", "#58748F")) +
+    scale_fill_manual(values = c("#BDCDD8", "#005B96", "#005B96")) +
     expand_limits(x = c(-2 * sds$sd_pooled, 2 * sds$sd_pooled))
   
  return(plotted)
@@ -272,7 +274,7 @@ plot_grid(
     "Literacy (PIAAC-L)", "Literacy (NEPS)", 
      "Numeracy (PIAAC-L)", "Numeracy (NEPS)"
   ),
-  label_size = 15,
+  label_size = 12,
   label_fontfamily = "Source Sans Pro",
   label_y = 1
   )
