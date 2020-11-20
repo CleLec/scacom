@@ -88,7 +88,7 @@ apa_table(skills_descriptives,
   escape = F,
   caption = "(ref:tableS1-caption)",
   font_size = "small",
-  note = "All values are pooled across 10 (20) PVs in PIAAC-L (NEPS)."
+  note = "Means are in the raw metric of the tests (0-500 points in PIAAC; logits in NEPS). All statistics are pooled across 10 (20) PVs in PIAAC-L (NEPS)."
 )
 ```
 \newpage
@@ -100,6 +100,9 @@ apa_table(skills_descriptives,
 #source("04_reporting.R")
 
 age_effects %>% 
+    mutate(Change = str_replace_all(Change,
+                                    "SD", 
+                                    "\\\\emph{SD}")) %>%
 rename("Linear age effect" = Change) %>%
 apa_table(
   col.names = c("Linear age effect", rep(c("Literacy", "Numeracy"), 2)),
@@ -115,14 +118,14 @@ apa_table(
   caption = "(ref:tableS2-caption)",
   align = "lcccc",
   font_size = "small",
-  note = "Cross-sectional age differences in skills  estimated from a linear model regressing $T_1$ skill level on age. The study period was three years in PIAAC-L and six years in NEPS. \"$SD$\" refers to change in the standard deviations of the respective skill at $T_1$. All estimates are pooled across the 10 (20) PVs." 
+  note = "Cross-sectional age differences in skills  estimated from a linear model regressing $T_1$ skill level on age. The study period was three years in PIAAC-L and six years in NEPS. \"$SD$\" refers to change expressed in pooled standard deviations of the respective skill. All estimates are pooled across the 10 (20 in NEPS) PVs." 
 )
 
 ```
 
 \newpage
 
-(ref:figureS1-caption) Cross-sectional age profiles of literacy and numeracy skills at $T_1$. The gray horizontal line represents the sample mean. 
+(ref:figureS1-caption) Cross-sectional age profiles of literacy and numeracy skills at $T_1$. The horizontal line represents the sample mean. The *Y* axis shows the raw metric of the tests (0-500 points in PIAAC; logits in NEPS).
 
 ```{r figureS1, echo = FALSE, warning = FALSE, fig.dim = c(8,7), fig.cap = "(ref:figureS1-caption)"}
 
@@ -200,11 +203,12 @@ plot_grid(
   label_fontfamily = "Source Sans Pro",
   label_y = 1
 )
+
 ```
 
 \newpage
 
-(ref:figureS2-caption) Distribution of the change scores ($\Delta{T_1, T_2)}$. The gray horizontal line represents "no change". The dark blue areas represent change greater than 0.8 *SD*, which is conventionally seen as a "large" effect. 
+(ref:figureS2-caption) Distribution of the change scores ($\Delta{T_1, T_2)}$. The dashed vertical line represents "no change". The dark blue areas represent change greater than 0.8 *SD*, which is conventionally seen as a "large" effect. 
 
 ```{r figureS2, echo = FALSE, warning = FALSE, fig.dim = c(8,7), fig.cap = "(ref:figureS2-caption)"}
 

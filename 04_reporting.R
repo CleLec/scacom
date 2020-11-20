@@ -23,6 +23,8 @@ library(miceadds)
 library(mitools)
 library(srvyr)
 library(extrafont)
+library(papaja)
+
 
 # Load raw data and results
 map(c(
@@ -31,7 +33,6 @@ map(c(
   "./02_results/cors.Rda",
   "./02_results/deltas.Rda"
 ), load, .GlobalEnv)
-
 
 
 # Rename data -------------------------------------------------------------
@@ -67,9 +68,9 @@ beautify_names <- function(data) {
             "low\n(ISCED 0-3)",
             "intermediate\n(ISCED 4/5B)",
             "high\n(ISCED 5A/6)",
-            "18-34 years",
-            "35-44 years",
-            "45-54 years",
+            "18 -- 34 years",
+            "35 -- 44 years",
+            "45 -- 54 years",
             "55+ years"
           )
         ),
@@ -80,9 +81,9 @@ beautify_names <- function(data) {
       "Education" = "low\n(ISCED 0-3)",
       "Education" = "intermediate\n(ISCED 4/5B)",
       "Education" = "high\n(ISCED 5A/6)",
-      "Age Group" = "18-34 years",
-      "Age Group" = "35-44 years",
-      "Age Group" = "45-54 years",
+      "Age Group" = "18 -- 34 years",
+      "Age Group" = "35 -- 44 years",
+      "Age Group" = "45 -- 54 years",
       "Age Group" = "55+ years"
     )
   )
@@ -331,7 +332,7 @@ describe_data <- function(study) {
 
   descriptives <- data %>%
     summarize(
-      "Range" = str_c(min(value, na.rm = T), " - ", max(value, na.rm = T)),
+      "Range" = str_c(min(value, na.rm = T), " -- ", max(value, na.rm = T)),
       "\\emph{M}" = mean(value, na.rm = T),
       "\\emph{SD}" = sd(value, na.rm = T)
     )
@@ -361,19 +362,19 @@ describe_skills <- function(study) {
   descriptives <- rbind(
     cbind(
       str_c(domain, " at $T_1$"),
-      str_c(data$t1_pv_Min, " - ", data$t1_pv_Max),
+      str_c(data$t1_pv_Min, " -- ", data$t1_pv_Max),
       data$t1_pv_M,
       data$t1_pv_SD
     ),
     cbind(
       str_c(domain, " at $T_2$"),
-      str_c(data$t2_pv_Min, " - ", data$t2_pv_Max),
+      str_c(data$t2_pv_Min, " -- ", data$t2_pv_Max),
       data$t2_pv_M,
       data$t2_pv_SD
     ),
     cbind(
       str_c("Change in ", domain, " ($\\Delta{T_1, T_2}$)"),
-      str_c(data$delta_Min, " - ", data$delta_Max),
+      str_c(data$delta_Min, " -- ", data$delta_Max),
       data$delta_M,
       data$delta_SD
     )
@@ -455,7 +456,7 @@ cors_t1_delta <- cors_t1_delta %>%
 sd_pooler <- function(data) {
   sd <- get(data) %>%
     group_by(.imp) %>%
-    summarise(SD = sd(t1_pv)) %>%
+    summarise(SD = 0.5 * (sd(t1_pv) + sd(t2_pv)) ) %>%
     summarise(SD = mean(SD)) %>%
     unlist()
   sd
