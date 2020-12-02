@@ -549,5 +549,35 @@ age_effects <- bind_cols(
   "Literacy (NEPS)" = age_fx("reading_neps") %>% unlist(),
   "Numeracy (NEPS)" = age_fx("math_neps") %>% unlist()
 ) %>%
-  mutate(across(is.numeric, printnum)) %>%
+  mutate(across(where(is.numeric), printnum)) %>%
   arrange(rev(Change))
+
+# Biplots of T1 and T2 ----------------------------------------------------
+
+
+pointplot <- function(data) {
+
+  domain <- if_else(grepl("reading", data), 
+                    "Literacy", 
+                    "Numeracy")
+  
+  y_lab <- str_c(domain, "skills at T2")
+  x_lab <- str_c(domain, "skills at T1")
+  
+  plotdata <- get(data) %>% 
+    mutate(PV = as_factor(.imp)) %>% 
+    filter(.imp < 5)
+  
+  pointplot <- plotdata %>%
+    ggplot(aes(y = t2_pv, x = t1_pv, color = PV)) +
+    geom_point() +
+    #  geom_abline() +
+    scale_color_discrete("PV Number") +
+    theme_apa() +
+    ylab(y_lab)
+    xlab(x_lab)
+    
+    pointplot
+}
+
+pointplot("math_neps")

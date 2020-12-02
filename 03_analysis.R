@@ -1,6 +1,6 @@
 # Project Info: ----------------------------------------------------------------
 # Lechner et al. (2020). Stability and Change in Literacy and Numeracy
-# Step 4: Analyses in neps-L.
+# Step 3: Analyses in PIAAC-L and NEPS
 # This code was written by clemens.lechner@gesis.org
 # R 4.0.3
 
@@ -342,7 +342,7 @@ cors.table <-
       "agegr=3" = "55 + years"
     )
   )) %>%
-  select(Group, matches("neps|neps"))
+  select(Group, matches("piaac|neps"))
 
 # Deltas tables
 
@@ -397,7 +397,7 @@ deltas.table <-
       "agegr=3" = "55 + years"
     )
   )) %>%
-  select(Group, matches("neps|neps"))
+  select(Group, matches("piaac|neps"))
 
 
 # Save all results --------------------------------------------------------
