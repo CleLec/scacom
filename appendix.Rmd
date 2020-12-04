@@ -128,7 +128,7 @@ age_effects %>%
 
 \newpage
 
-(ref:figureS1-caption) Cross-sectional age profiles of literacy and numeracy skills at $T_1$. The horizontal line represents the sample mean. The *Y* axis shows the raw metric of the tests (0-500 points in PIAAC; logits in NEPS).
+(ref:figureS1-caption) Cross-sectional age profiles of literacy and numeracy skills at $T_1$. The horizontal line represents the sample mean. The *Y* axis shows the raw metric of the tests (0-500 points in PIAAC; logits in NEPS). 
 
 ```{r figureS1, echo = FALSE, warning = FALSE, fig.dim = c(8,7), fig.cap = "(ref:figureS1-caption)"}
 
@@ -288,7 +288,7 @@ plot_grid(
 
 \newpage
 
-(ref:figureS3-caption) Scatterplots of literacy and numeracy skills at the two time points. For better legibility, the plot shows data only from the first five plausible values (PV). Axes are in the original metrics of the PIAAC (0–500 points) and NEPS tests (logits), respectively. The lines show the linear correlation coefficient $r_{T_1, T_2}$ based on each of the five PVs.
+(ref:figureS3-caption) Scatterplots of literacy and numeracy skills at the two time points. For better legibility, the plot shows data only from the first five plausible values (PV). Axes are in the original metrics of the PIAAC (0-500 points) and NEPS tests (logits), respectively. The lines show the linear correlation coefficient $r_{T_1, T_2}$ based on each of the five PVs.
 
 ```{r figureS3, echo = FALSE, warning = FALSE, fig.dim = c(9,7), fig.cap = "(ref:figureS3-caption)"}
 
@@ -323,7 +323,7 @@ point_plotter <- function(data) {
     )) +
     geom_point(size = 0.1) +
     geom_smooth(method = "lm", se = FALSE,
-                size = 0.2) +
+                size = 0.25) +
     scale_color_brewer("PV", palette = "Blues") +
     scale_fill_brewer("PV", palette = "Blues") +
     theme_apa() +
