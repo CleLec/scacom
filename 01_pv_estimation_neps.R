@@ -133,12 +133,12 @@ data_merged <-
     gf = dga7_sc3b, state = tx80101, townsize = tx80102) %>%
   mutate(
     age = inty  - t70000y, age2 = age^2, age3 = age^3, eduyrs2 = eduyrs^2,
-    edugr = if_else(isced %in% c(0:5), 0,
-                    if_else(isced %in% c(6:8), 1,
-                            if_else(isced %in% c(9:10), 2, NA_real_)
-                    )
-    )
-  ) %>%  # convert categorical variables to factors
+    edugr = case_when(
+            isced %in% c(0:5) ~ 0,
+            isced %in% c(6:8) ~ 1,
+            isced %in% c(9:10) ~ 2, 
+            TRUE ~ NA_real_)
+    ) %>%  # convert categorical variables to factors
   mutate(across(
     c(
       gender, edugr, isced, language, casmin,  state), 
@@ -227,15 +227,16 @@ reading_neps <- read_pvs %>%
   left_join(., read_eaps, by = "ID_t") %>%
   left_join(., data_weights, by = "ID_t") %>%
   mutate(
-    agegr = if_else(age <= 34, 0,
-                    if_else(age > 34 & age <= 44, 1,
-                            if_else(age > 44 & age <= 54, 2, 3)
-                    )
-    ),
-    edugr = if_else(isced %in% c(0:5), 0,
-                    if_else(isced %in% c(6:8), 1,
-                            if_else(isced %in% c(9:10), 2, NA_real_)
-                    )),
+    agegr = case_when(age <= 34 ~ 0,
+                      age > 34 & age <= 44 ~ 1,
+                      age > 44 & age <= 54 ~ 2,
+                      age > 54 ~ 3
+     ),
+    edugr =  case_when(
+      isced %in% c(0:5) ~ 0,
+      isced %in% c(6:8) ~ 1,
+      isced %in% c(9:10) ~ 2, 
+      TRUE ~ NA_real_),
     total = 1 #needed for selecting all observations in subsequent analysis 
   ) %>%
   rename(t1_pv = PV_w3, t2_pv = PV_w9,
@@ -253,15 +254,16 @@ math_neps <- math_pvs %>%
   left_join(., math_eaps, by = "ID_t") %>%
   left_join(., data_weights, by = "ID_t") %>%
   mutate(
-    agegr = if_else(age <= 34, 0,
-                    if_else(age > 34 & age <= 44, 1,
-                            if_else(age > 44 & age <= 54, 2, 3)
-                    )
+    agegr = case_when(age <= 34 ~ 0,
+                      age > 34 & age <= 44 ~ 1,
+                      age > 44 & age <= 54 ~ 2,
+                      age > 54 ~ 3
     ),
-    edugr = if_else(isced %in% c(0:5), 0,
-                    if_else(isced %in% c(6:8), 1,
-                            if_else(isced %in% c(9:10), 2, NA_real_)
-                    )),
+    edugr =  case_when(
+      isced %in% c(0:5) ~ 0,
+      isced %in% c(6:8) ~ 1,
+      isced %in% c(9:10) ~ 2, 
+      TRUE ~ NA_real_),
     total = 1 #needed for selecting all observations in subsequent analysis 
   ) %>%
   rename(t1_pv = PV_w3, t2_pv = PV_w9,

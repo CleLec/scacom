@@ -2,7 +2,6 @@
 title             : | 
   Stability and Change in Adults' Literacy and Numeracy Skills:
   Evidence From two Large-Scale Panel Studies
-
 shorttitle        : "Stability and Change in Adults' Literacy and Numeracy"
 
 author:
@@ -11,7 +10,7 @@ author:
     corresponding : yes    
     address       : "B2, 1, 68159 Mannheim, Germany"
     email         : "clemens.lechner@gesis.org"
-    role:         # 
+    role:          
       - Funding acquisition
       - Supervision
       - Conceptualization
@@ -28,34 +27,32 @@ author:
   - name          : "Ai Miyamoto"
     affiliation   : "2"
     role: 
-  - Writing - Review & Editing
+      - Writing - Review & Editing
   - name          : "Alexandra Wicht"
     affiliation   : "3"
     role:
       - Data curation
       - Formal analysis
       - Writing - Review & Editing
-  
+
 affiliation:
   - id            : "1"
-    institution   : "GESIS  -- Leibniz Institute for the Social Sciences, Mannheim, Germany"
+    institution   : "GESIS -- Leibniz Institute for the Social Sciences, Mannheim, Germany"
   - id            : "2"
     institution   : "University of Freiburg, Germany"
   - id            : "3"
     institution   : "University of Siegen, Germany"
 
 authornote: |
-  
   The authors would like to thank student research assistants Marcel Kappes and Thomas Knopf, and Dr. William Thorne (OECD) for helpful comments on an earlier version of this study.
-  
+
 abstract: |
- This study seeks to answer two questions about the development of literacy  (reading competence) and numeracy (math competence) during adulthood: First, how stable are these skills in adulthood  -- and if they change, does change involve gains or losses? Second, how is change distributed in the population and in demographic subgroups? To answer these questions, we used data from two German large-scale surveys: The PIAAC longitudinal study (PIAAC-L; *N* = 1,775) and the National Educational Panel Study (NEPS; *N* = 3,087). Both surveys offer repeated measures of adults' literacy and numeracy spaced three (PIAAC-L) to six (NEPS) years apart. We examine  mean-level change and ($\Delta{T_1,T_2}$) and rank-order consistencies ($r_{T_1,T_2}$) of skills in the total population as well as in sociodemographic subgroups defined by age, gender, and education. We used plausible values (PVs) to account for measurement error in skills. Results revealed that literacy and numeracy are highly but not perfectly stable over time. Rank-order consistencies ranged from *r* = .83 for literacy and *r* = 0.81 for numeracy over three years in PIAAC-L to *r* = .66  for literacy and *r* = .76 for numeracy over six years in NEPS, again with little variation across subgroups. Whereas mean-level change was near zero for both skills and in both studies, there was considerable variation in the change scores across individuals and, to a lesser extent, subgroups. Few  subgroup differences replicated across studies. We found some evidence for moderate skill gains during young adulthood (18--29 years) and losses in old age (55+ years), resembling age profiles from cross-sectional studies. This suggests that adults' literacy and numeracy are not set in stone and can change even over relatively short time periods. Our findings can serve as a benchmark against which to compare future longitudinal findings on stability and change in literacy and numeracy.
+   This study seeks to answer two questions about the development of literacy  (reading competence) and numeracy (math competence) during adulthood: First, how stable are these skills in adulthood  -- and if they change, does change involve gains or losses? Second, how is change distributed in the population and in demographic subgroups? To answer these questions, we used data from two German large-scale surveys: The PIAAC longitudinal study (PIAAC-L; *N* = 1,775) and the National Educational Panel Study (NEPS; *N* = 3,087). Both surveys offer repeated measures of adults' literacy and numeracy spaced three (PIAAC-L) to six (NEPS) years apart. We examine  mean-level change and ($\Delta{T_1,T_2}$) and rank-order consistencies ($r_{T_1,T_2}$) of skills in the total population as well as in sociodemographic subgroups defined by age, gender, and education. We used plausible values (PVs) to account for measurement error in skills. Results revealed that literacy and numeracy are highly but not perfectly stable over time. Rank-order consistencies ranged from *r* = .83 for literacy and *r* = 0.81 for numeracy over three years in PIAAC-L to *r* = .66  for literacy and *r* = .76 for numeracy over six years in NEPS, again with little variation across subgroups. Whereas mean-level change was near zero for both skills and in both studies, there was considerable variation in the change scores across individuals and, to a lesser extent, subgroups. Few  subgroup differences replicated across studies. We found some evidence for moderate skill gains during young adulthood (18--29 years) and losses in old age (55+ years), resembling age profiles from cross-sectional studies. This suggests that adults' literacy and numeracy are not set in stone and can change even over relatively short time periods. Our findings can serve as a benchmark against which to compare future longitudinal findings on stability and change in literacy and numeracy.
   
-  <!-- https://tinyurl.com/ybremelq -->
   
 keywords          : "literacy, numeracy, skills, intelligence, development, adulthood"
 wordcount         : "X"
-bibliography      : ["r-references2.bib"]
+bibliography      : ["r-references.bib"]
 
 floatsintext      : no
 figurelist        : no
@@ -69,7 +66,7 @@ csl               : "apa.csl"
 documentclass     : "apa7"
 classoption       : "man"
 output            : papaja::apa6_pdf
-#appendix          : "appendix.Rmd"
+appendix          : "appendix.Rmd"
 header-includes   :
   - \usepackage{rotating}
   - \DeclareDelayedFloatFlavor{sidewaysfigure}{figure}
@@ -77,6 +74,7 @@ header-includes   :
   - \usepackage[T1]{fontenc}
 
 ---
+
 
 ```{r setup, include = FALSE}
 # Load required packages
@@ -109,7 +107,6 @@ Demographic aging in most industrialized societies and rapid technological advan
 These are not only interesting research questions in their own right, they are also of importance to policymakers and practitioners interested in promoting lifelong learning. If literacy and numeracy proved to be impervious to change during adulthood, investments in basic skills or workplace learning programs aimed at fostering literacy and numeracy during adulthood might have a low return on investment, and childhood may be a more promising life stage for policies and interventions to focus on [e.g., @cunha2007]. Moreover, literacy and numeracy may change over time, but gains and losses may be unevenly distributed. In this case, identifying segments of the population that are more likely to experience skill loss than others may aid the development of targeted policies and interventions. 
 
 ## Previous Evidence on Age Differences in Skills 
-
 Given the policy relevance of literacy and numeracy development during adulthood, what answers can extant research provide us? Three key insights offered by current evidence are readily summarized [for reviews, see @desjardins2012; @paccagnella2016; also see @deary2014]: (1) Lifelong plasticity of skills, (2) life stage dependency of change, and (3) individual and subgroup differences in change.
 
 First, literacy and numeracy appear to continue to develop across adulthood. Despite the fact that literacy have a strong genetic component [i.e., are highly heritable; @andreola2020], both cross-sectional and the few available longitudinal studies suggest that these skills are not set like plaster after childhood but continue to change across the entire lifespan [@paccagnella2016]. Skill change during adulthood may involve both gains and losses. 
@@ -118,27 +115,23 @@ Second, gains and losses typically occur at different ages. As studies using dat
 
 Third, beyond these average age trends, there are additional individual and group differences in skill change. For example, using cross-sectional PIAAC 2012 data, @paccagnella2016 compared age-related age differences in literacy and numeracy skills among adults with different levels of educational qualification (i.e., primary, secondary, and territory or above) and found that those with the highest educational qualification experienced slightly larger skill loss during adulthood than those with lower educational qualification By contrast, a recent longitudinal study in German adults found that higher education had a protective effect against declines in literacy  over time after controlling for initial level of literacy skills [@wicht2020]. In addition, we see a general tendency of female adults having relative strength in literacy and of male adults having relative strength in numeracy across the life course [e.g, @houtkoop1998; @satherley2008], although it is unclear whether this translates to differential change over time as some longitudinal studies did not find any gender differences in skill change over time [@reder2009; @wicht2020].
 
-Although these prior studies have greatly advanced our knowledge about skill development in adulthood, they cannot conclusively answer the questions posed at the outset. This is because these studies are overwhelmingly based on large-scale cross-sectional surveys such as PIAAC and its predecessors (i.e., the International Adult Literacy Survey in 1994 and 1998 or the Adult Literacy and Life Skills Survey in 2003, 2006, and 2008); or on small-scale longitudinal studies based on selective samples such as the longitudinal study of adult learners (LSAL) that focuses on high-school dropouts in the US [@reder2009]. Cross-sectional studies into the age-related changes in literacy and numeracy skills are limited in that they are unable to disentangle age effects from cohort effects. That is, they are unable to ascertain whether the putative age differences are due to age-related changes or stem from preexisting differences in skills during childhood. Small-scale longitudinal studies based on selective samples, on the other hand, are limited in that their findings may not generalize to the population as a whole. Moreover, by their very nature, these studies cover some subgroups (e.g., high-school dropouts) in a certain life stage (e.g., young adulthood) but not others (e.g., the highly educated) and life stages (e.g., old age) that may be of equal interest to policymakers and practitioners. Also, compared to literacy, the life-span development numeracy has received much less attention by prior research, despite arguments in the literature that numeracy skills are gaining in importance on today's labor markets [e.g., @gal2020; @gauly2020].
-
+Although these prior studies have greatly advanced our knowledge about skill development in adulthood, they cannot conclusively answer the questions posed at the outset. This is because these studies are overwhelmingly based on large-scale cross-sectional surveys such as PIAAC and its predecessors (i.e., the International Adult Literacy Survey in 1994 and 1998 or the Adult Literacy and Life Skills Survey in 2003, 2006, and 2008); or on small-scale longitudinal studies based on selective samples such as the longitudinal study of adult learners (LSAL) that focuses on high-school dropouts in the US [@reder2009]. Cross-sectional studies into the age-related changes in literacy and numeracy skills are limited in that they are unable to disentangle age effects from cohort effects. That is, they are unable to ascertain whether the putative age differences are due to age-related changes or stem from preexisting differences in skills during childhood. Small-scale longitudinal studies based on selective samples, on the other hand, are limited in that their findings may not generalize to the population as a whole. Moreover, by their very nature, these studies cover some subgroups (e.g., high-school dropouts) in a certain life stage (e.g., young adulthood) but not others (e.g., the highly educated) and life stages (e.g., old age) that may be of equal interest to policymakers and practitioners. Also, compared to literacy, the life-span development numeracy has received much less attention by prior research, despite arguments in the literature that numeracy skills are gaining in importance on today's labor markets [e.g., @gal2020; @gauly2020].  
 In order to overcome the limitations of cross-sectional and small-scale longitudinal designs, repeated measures of literacy and numeracy skills are needed. Such data have long been in short supply. Until very recently, there were simply no data sources available internationally that combined the following desirable features that would allow for complete and robust answers to questions surrounding age-related changes in skills during adulthood: A large and non-selective sample; objective, and high-quality skill assessments; and a repeated measures design.
 
-## The Present Research 
-In the present study, we leverage the unique potential of two recent German large-scale assessment surveys that do meet the above criteria: PIAAC-longitudinal (PIAAC-L), a follow-up to the 2012 Programme for the International Assessment of Adult Competencies (PIAAC) study in Germany; and Starting Cohort 6 from the National Educational Panel Study (NEPS). Both surveys offer repeated, high-quality -- and largely comparable -- measures of adults' literacy and numeracy spaced three (PIAAC-L) to six years (NEPS) apart. Combining these data offers us unprecedented opportunities to analyze changes in literacy and numeracy skills over time during adulthood, allowing us to present what appear to be the most comprehensive descriptive analyses of age-related changes of literacy and numeracy skills during adulthood to date.
-
-With these data, we seek to answer two guiding questions about the stability and change of adults' literacy and numeracy skills. First, to what extent do these skills change across the three- to six-year periods covered by PIAAC-L and NEPS? Second, does the extent of age-related change differ across major sociodemographic groups? 
+## The Present Research
+In the present study, we leverage the unique potential of two recent German large-scale assessment surveys that do meet the above criteria: PIAAC-longitudinal (PIAAC-L), a follow-up to the 2012 Programme for the International Assessment of Adult Competencies (PIAAC) study in Germany; and Starting Cohort 6 from the National Educational Panel Study (NEPS). Both surveys offer repeated, high-quality -- and largely comparable -- measures of adults' literacy and numeracy spaced three (PIAAC-L) to six years (NEPS) apart. Combining these data offers us unprecedented opportunities to analyze changes in literacy and numeracy skills over time during adulthood, allowing us to present what appear to be the most comprehensive descriptive analyses of age-related changes of literacy and numeracy skills during adulthood to date.  
+With these data, we seek to answer two guiding questions about the stability and change of adults' literacy and numeracy skills. First, to what extent do these skills change across the three- to six-year periods covered by PIAAC-L and NEPS? Second, does the extent of age-related change differ across major sociodemographic groups?  
 We approach these questions from two perspectives on age-related change enabled by the repeated-measures designs [e.g., @deary2014]: (1) relative change as captured by the correlation between literacy or numeracy skills measured at two time points, $r_{T1, T2}$ (rank-order consistency); and (2) absolute change as capture by the change score, $\Delta{T1, T2}$ (mean-level change; for details, see Method). We present descriptive analyses of change both for the total populations as well as in major sociodemographic subgroups defined by age, gender, and educational qualification These subgroup analyses allow us to detect potential sociodemographic gradients in literacy and numeracy development. Of particular interest to our study is the question whether the age differences in skills and subgroup differences therein that we obtain through our repeated-measures designs parallel, or differ from, estimates of age differences obtained in cross-sectional designs [e.g., those reported by @paccagnella2016; @deary2014]?
 
-# Method 
-
+# Method and Materials
 ## Data and Samples 
-
 ### PIAAC/PIAAC-L
  Our first data source is the German PIAAC/PIAAC-L study [version 3-0-0; @gesis2017]. PIAAC was conducted in 2012 and provides internationally comparable data on the skills of the working-age population (16-65 years) residing in private households in large number of (mainly OECD) countries [@oecd2013a]. In Germany, a registry-based sampling design was implemented, in which respondents were randomly sampled from local population registers in randomly selected German municipalities. A total of 5,465 interviews in respondents' homes were achieved. At the end of the PIAAC interview, all German PIAAC respondents were asked whether they were willing to be re-contacted for a follow-up study (i.e., PIAAC-L) in the future. A total of 3,758 (or 69%) of the original 5,465 PIAAC 2012 respondents consented to being re-interviewed and could be successfully contacted for the first follow-up wave in 2014. 
- 
 Literacy and numeracy skills were assessed in PIAAC in 2012 (henceforth "$T_1$") and again three years later in PIAAC-L wave 2 in 2015 (henceforth "$T_2$"). Our longitudinal sample contains the `r (nrow(reading_piaac) / max(reading_piaac$.imp)) %>% printnum(., digits = 0)` adults aged 18--65 at $T_1$ for who took the test at both measurement occasions. For the longitudinal analyses, we multiplied the total population weight of PIAAC 2012 with a factor that accounts for non-response in PIAAC-L 2015. For more details on the samples, procedures and weighting, see the technical reports to PIAAC 2012 Germany and PIAAC-L [@zabal2014; @zabal2017]. Table\ \@ref(tab:table1) (right column) shows the sociodemographic characteristics and skill profile of the (unweighted) PIAAC-L sample.
 
 ### NEPS
 Our second data source is Starting Cohort 6 (Adults) of NEPS [version 11.0.0; @artelt2020]. NEPS is an ongoing large-scale, multi-cohort, longitudinal survey on educational trajectories in Germany [for a detailed description including sampling procedures, see, @blossfeld2011]. Starting Cohort 6 comprised a sample of initially 11,649 adults aged 22--65 years who were interviewed in up to nine annual waves so far. Literacy and numeracy skills were assessed twice, first in 2010/2011 (henceforth "$T_1$") and again six years later in 2016/2017 ("$T_2$"). Our longitudinal sample comprises `r printnum((nrow(reading_neps) / max(reading_neps$.imp)), digits = 0)` respondents who took the literacy test at both occasions and `r printnum((nrow(math_neps) / max(math_neps$.imp)), digits = 0)` respondents for numeracy. We used longitudinal weights (NEPS variable w_t456789_std) for individuals who continuously participated until $T_2$ (wave 9), which are computed by means of the longitudinal weight of the previous wave, the probability of being part of the used sample, and the likelihood of participating at $T_2$ [for details on the weighting procedure, see @hammon2018]. Akin to PIAAC, this weight adjusts for nonresponse (dropout). <!--Check whether this is true--> Table 1 (right column) shows the sociodemographic characteristics and skill profile of the (unweighted) NEPS sample.
+
 
 (ref:table1-caption) Sociodemographic characteristics of the two samples and skill profile of the two samples. 
 
@@ -189,13 +182,10 @@ In both datasets, we ran each of our analysis (described below) separately on ea
 ### Measures of Change
 Our first measure of change is based on the change (or difference) score between two measurement occasions, $\Delta{i, T_1, T_2} = y_{i,T_2} - y_{i,T_1}$. By aggregating the change score across all individuals in the sample or a subgroup, we obtain our estimate of interest, mean-level change in the population or subgroup in question:
 $$\Delta{T_1, T_2} = \sum_{i=1}^{n} \frac{y_{i, T_2} - y_{i, T_2}}{n} $$ 
-
 This is the most straightforward and widely used measure of change in an outcome in developmental research. Note that values of $\Delta{T_1,T_2}$ are in the raw metric of the tests (0-500 points in PIAAC; logits in NEPS). Therefore, to enhance comparability within and across studies, we report the standardized effect size Cohen's $d_{av}$, which expresses the average (mean-level) change in skills over in units of the standard deviation of the test. As is conventional [@lakens2013], we used the pooled standard deviation from both time points:
 $$d_{av} = \frac{\Delta{T_1, T_2}}{\sigma_{pooled}} = \frac{\sum_{i=1}^{N} \frac{y_{i, T_2} - y_{i, T_2}}{N}}{0.5 \times (SD_{T_1} + SD_{T2})}$$.
-
 Our second measure of change was the rank-order consistency [sometimes called "differential stability"; e.g., @schalke2013]. Its measure is the Pearson correlation between the tests at two time points,
 $$r_{T_1,T_2} = \frac{\sum_{i=1}^{N} (y_{i,{T_1}} - \overline{y}_{T_1}) \times (y_{i,{T_2}} - \overline{y}_{T_2}) }{\sigma_{T_1}\sigma_{T_2}}$$, where $Y$ refers to the literacy or numeracy proficiency of an individual $i$ at time $T$. Rank-order consistency is a widely used standardized effect size measure that can be readily compared within and across studies.
-
 The two measures of change offer complementary information [@deary2014]: Whereas $r_{T_1,T_2}$ refers to how stable individuals' relative standing in the skill distribution is across two measurement occasions (i.e., the stability of individual differences), $\Delta{T_1,T_2}$ refers to the how much individuals' skills change over time in absolute terms. Absolute change is largely independent of relative change: Even high rank-order consistency (e.g., $r_{T_1,T_2} > .90$) do not preclude the possibility of substantial mean-level change -- as long as skill gains or losses are very similar in size across individuals (i.e., $\Delta{T_1,T_2}$ has little variability).
 
 ### Subgroup analyses
@@ -222,9 +212,7 @@ knitr::include_graphics("deltas.pdf")
 Figure\ \@ref(fig:figure1) presents results for our first measure of change: mean-level change in literacy (blue) and numeracy (red), expressed in Cohen's $d_{av}$, across three years (PIAAC-L, left panel) to six (NEPS, right panel) years of adulthood in the total population and in the subgroups.
 
 In PIAAC-L, there was little evidence for mean-level change across three years in literacy in the total population. The same applied to numeracy. When looking at change separately in sociodemographic subgroups, few differences emerged. For literacy (but not numeracy), there were small gains among the most highly educated. Moreover,there were small gains in both literacy and numeracy in the youngest age group.
-
 Likewise, in NEPS, there was little evidence for mean-level change across six years in literacy or numeracy in the total population. In contrast to PIAAC-L, the tendency of most effect sizes was towards losses, not gains, in literacy and numeracy. Subgroup differences were mostly minor: Apart from a small gender difference in numeracy change favoring women, highly-educated individuals experienced losses in literacy and, to a lesser extent, numeracy skills over the six-year period that were quite sizable, given the relatively short time period. Moreover, there was a tendency (although less pronounced than in PIAAC) for gains in the youngest and losses in the older age groups, although again the statistical uncertainty about these estimates was considerable.
-
 However, as the standard deviations of the change scores in Tables\ \@ref(tab:table1) and \@ref(tab:tableS1) demonstrated, there was considerable heterogeneity behind the small or zero mean-level changes in Figure\ \@ref(fig:figure1). A closer look at the distribution of the change scores of literacy and numeracy, shown in supplementary Figure\ \@ref(fig:figureS2) confirmed this impression. In both studies, the distribution of the change scores of both literacy and numeracy were roughly symmetric around a near-zero mean. A considerable share of respondents experienced upward or downward skill change, and both occurred in roughly equal measure.
 
 ## Rank-order consistencies
@@ -236,10 +224,11 @@ However, as the standard deviations of the change scores in Tables\ \@ref(tab:ta
 knitr::include_graphics("cors.pdf")
 
 ```
-Figure\ \@ref(fig:figure2) shows the rank-order consistencies of literacy and numeracy in PIAAC-L (left panel) and NEPS (right panel). 
+Figure\ \@ref(fig:figure2) shows the rank-order consistencies of literacy and numeracy in PIAAC-L (left panel) and NEPS (right panel). For an even more intuitive visualization, supplementary Figure\ \@ref(fig:figureS3) shows scatterplots of T_1 for the first five PVs of each skill and study.
+
 In PIAAC-L, three-year rank-order consistencies were just above .80 for both literacy and numeracy skills. Variation across subgroups was limited. All correlations ranged between $`r cors %>% filter(grepl("piaac", target)) %>% summarise(min(rho)) %>% printnum()` \leq r_{T_1, T_2} \leq `r cors %>% filter(grepl("piaac", target)) %>% summarise(max(rho)) %>% printnum()`$ and had widely overlapping confidence intervals.
 
-In NEPS, a slightly different picture emerged. For literacy, the six-year rank-order consistencies were lower than in PIAAC, and roughly as high as one would expect from the twice as long time interval between assessments (squaring the PIAAC-L rank order consistency gives $r = `r .83^2`$). For numeracy, the rank-order consistencies in the total sample and all but one subgroups were higher ($`r cors %>% filter(target == "math_neps") %>% summarise(min(rho)) %>% printnum()` \leq r_{T_1, T_2} \leq `r cors %>% filter(target == "math_neps") %>% summarise(max(rho)) %>% printnum()`$) than those for literacy ($`r cors %>% filter(target == "reading_neps") %>% summarise(min(rho)) %>% printnum()` \leq r_{T_1, T_2} \leq `r cors %>% filter(target == "reading_neps") %>% summarise(max(rho)) %>% printnum()`$), and only minimally smaller than those in PIAAC-L. Within each skill, there was little variation across sociodemographic subgroups as in PIAAC, with confidence intervals overlapping widely. 
+In NEPS, a slightly different picture emerged. For literacy, the six-year rank-order consistencies were lower than in PIAAC, and roughly as high as one would expect from the twice as long time interval between assessments (squaring the PIAAC-L rank order consistency gives $r = `r .83^2`$). (The lower rank-order consistency is also evident from the larger scatter of the points and the flatter regression line in Figure\ \@ref(fig:figureS3).) For numeracy, the rank-order consistencies in the total sample and all but one subgroups were higher ($`r cors %>% filter(target == "math_neps") %>% summarise(min(rho)) %>% printnum()` \leq r_{T_1, T_2} \leq `r cors %>% filter(target == "math_neps") %>% summarise(max(rho)) %>% printnum()`$) than those for literacy ($`r cors %>% filter(target == "reading_neps") %>% summarise(min(rho)) %>% printnum()` \leq r_{T_1, T_2} \leq `r cors %>% filter(target == "reading_neps") %>% summarise(max(rho)) %>% printnum()`$), and only minimally smaller than those in PIAAC-L. Within each skill, there was little variation across sociodemographic subgroups as in PIAAC, with confidence intervals overlapping widely. 
 
 In sum, the rank-order consistencies -- indicative of "differential stability" -- further reinforced the view that a great deal of individual differences in change lie behind the small-to-zero mean-level changes. 
 
@@ -252,7 +241,7 @@ Second, however, we found a considerable degree of individual differences behind
 
 To put the rank-order consistencies of literacy and numeracy into perspective, several studies on cognitive development and aging found higher rank-order consistencies for measures of intelligence over longer periods of time. For example, @gow2012, in one of the few longitudinal studies on the stability of cognitive ability across the life span, found that general intelligence (*g*) measured with the Moray House Test No. 12 (MHT) at age 11 correlated at $r = .67$ ($r = .78$ after disattenuation) with intelligence at age 70 in 1,017 Scottish individuals from the Lothian Birth Cohort study. Other cohort studies from Scotland yielded comparable estimates but found rank-order consistencies to decline somewhat as the age of individuals at retest further increased into the eigth decade of life [@deary2014]. Similarly, @schalke2013 reported rank-order consistencies of $r = .85$ for *g* from age 12 to age 52, with only slightly lower estimates for more specific abilities (e.g., fluid reasoning, comprehension knowledge, visual processing) among 344 individuals from Luxembourg. One should bear in mind that the measures of intelligence in these studies are not directly comparable to the measures of literacy and numeracy in NEPS [recall that literacy and numeracy are best viewed as broad abilities on Stratum II in the CHC model of intelligence; @mcgrew2009]. Still, it is clear that the rank-order consistencies of literacy and numeracy over three to six years in PIAAC-L and NEPS are relatively low in comparison to that of general intelligence in these studies. 
 
-Third, although there was considerable variation in skill change over time, few of these differences were systematic across sociodemographic subgroups. Most of the subgroup differences in mean-level change were small and, even more important, did not replicate across the two studies. In fact, some of the subgroup differences were in outright opposite direction in the two studies: The gender differences in mean-level change observed in NEPS were not present in PIAAC-L; the age differences in PIAAC-L roughly followed the well-known pattern from cross-sectional data (gains in younger adults, no change or losses in older adults) but not as clearly in NEPS; and the literacy gains of higher-educated individuals in PIAAC-L were starkly contrasted by losses in NEPS. The losses in literacy skills among the highly educated in NEPS was the strongest mean-level difference we observed ($d = `r deltas %>% select(dav) %>%  min()`)$; change of about a fourth of a standard deviation is sizable, given the relatively short period of six years. The stronger declines among the highly educated observed in NEPS are in line with the cross-sectional age profiles of different educational groups reported by @paccagnella2016, which he labeled as "surprigsing" (p. 66). However, this finding may be indicative of ceiling effects, combined with regression to the mean, in the NEPS assessment compared to that in PIAAC. Consistent with this conjecture, additional analyses showed that the $T_1$ literacy and numeracy scores correlated with the change score at $`r cors_t1_delta %>% filter(study == "neps") %>% select(rho) %>% min()` \leq r \leq `r cors_t1_delta %>% filter(study == "neps") %>% select(rho) %>% max() %>% printnum()`$ but only at $`r cors_t1_delta %>% filter(study == "piaac") %>% select(rho) %>% min()` \leq r \leq `r cors_t1_delta %>% filter(study == "piaac") %>% select(rho) %>% max() %>% printnum()`$ in PIAAC-L. Likewise, recent studies investigating literacy skill change in NEPS separately by initial skill level [@wicht2021] showed that very low or very high $T_1$ literacy values regressed to the mean at $T_2$, and that higher-educated individuals in NEPS experience relative gains, not losses, in literacy, after controlling for initial skill levels in regression [@wicht2020]. 
+Third, although there was considerable variation in skill change over time, few of these differences were systematic across sociodemographic subgroups. Most of the subgroup differences in mean-level change were small and, even more important, did not replicate across the two studies. In fact, some of the subgroup differences were in outright opposite direction in the two studies: The gender differences in mean-level change observed in NEPS were not present in PIAAC-L; the age differences in PIAAC-L roughly followed the well-known pattern from cross-sectional data (gains in younger adults, no change or losses in older adults) but not as clearly in NEPS; and the literacy gains of higher-educated individuals in PIAAC-L were starkly contrasted by losses in NEPS. The losses in literacy skills among the highly educated in NEPS was the strongest mean-level difference we observed ($d = `r deltas %>% select(dav) %>%  min()`)$; change of about a fourth of a standard deviation is sizable, given the relatively short period of six years. The stronger declines among the highly educated observed in NEPS are in line with the cross-sectional age profiles of different educational groups reported by @paccagnella2016, which he labeled as "surprigsing" (p. 66). However, this finding may be indicative of bottom and/or ceiling effects, combined with regression to the mean, in the NEPS assessment compared to that in PIAAC. Consistent with this conjecture, additional analyses showed that the $T_1$ literacy and numeracy scores correlated with the change score at $`r cors_t1_delta %>% filter(study == "neps") %>% select(rho) %>% min()` \leq r \leq `r cors_t1_delta %>% filter(study == "neps") %>% select(rho) %>% max() %>% printnum()`$ but only at $`r cors_t1_delta %>% filter(study == "piaac") %>% select(rho) %>% min()` \leq r \leq `r cors_t1_delta %>% filter(study == "piaac") %>% select(rho) %>% max() %>% printnum()`$ in PIAAC-L. Likewise, recent studies investigating literacy skill change in NEPS separately by initial skill level [@wicht2021] showed that very low or very high $T_1$ literacy values regressed to the mean at $T_2$, and that higher-educated individuals in NEPS experience relative gains, not losses, in literacy, after controlling for initial skill levels in regression [@wicht2020]. 
 
 Subgroup differences in rank-order consistencies were no more pronounced than those in mean-level stabilities. The only meaningful difference we found was the lower rank-order consistency of literacy (but not numeracy) in the oldest compared to the younger age groups in NEPS (but not PIAAC). Because of the limited sample size in these subgroups, the statistical uncertainty about these difference is high, however. Thus, we conclude that sociodemographic subgroups do not differ strongly in change and stability of literacy and numeracy skills. 
 
@@ -263,40 +252,34 @@ First, our data covered only two measurement occasions spanning time periods of 
 
 Second, as noted, the assessments in PIAAC and NEPS were not high-stakes assessments. Although interviewers in both studies did their best to ensure that respondents took the tests seriously, the tests are more likely to represent "typical" as opposed to "maximum" performance. Whether typical or maximum performance in more relevant for life outcomes can be debated, yet is clear that high-stakes assessments might lead to different estimates of stability and change. In high-stakes assessment, performance tends to depend less on extraneous factors such as test motivation because most individuals are highly motivated in high-stakes assessments. Because it is almost impossible to implement repeated-measures high-stakes assessments, future studies should investigate whether extraneous factors such as test motivation influence estimates of change and stability in literacy an numeracy. 
 
-Third, the differences between PIAAC-L and NEPS in the patterns of stability and change that we observed highlight that the assessments do produce slightly different estimates of change and stability. It will be important to understand how research designs and assessment approaches influence estimates of stability and change in adult skills. As noted, PIAAC-L and NEPS use similar but not identical assessment approaches [see @durda2020 for a discussion], and resulting scores are highly but not perfectly correlated [@carstensen2017]. One can speculate that the NEPS assessment -- which is designed to enable comparisons with the other NEPS cohorts, including children and youth [@weinert2011; @gehrer2013] -- is more susceptible to ceiling effects than that of PIAAC, which is tailored to adults. Moreover, both studies suffer from panel dropout, especially of those with lower education and skills [@martin2020]. Although we used weights to remedy the potential bias, future studies should investigate the extent to which selectivity may still bias results. 
-
+Third, the differences between PIAAC-L and NEPS in the patterns of stability and change that we observed highlight that the assessments do produce slightly different estimates of change and stability. It will be important to understand how research designs and assessment approaches influence estimates of stability and change in adult skills. As noted, PIAAC-L and NEPS use similar but not identical assessment approaches [see @durda2020 for a discussion], and resulting scores are highly but not perfectly correlated [@carstensen2017]. One can speculate that the NEPS assessment -- which is designed to enable comparisons with the other NEPS cohorts, including children and youth [@weinert2011; @gehrer2013] -- is more susceptible to bottom and/or ceiling effects than that of PIAAC, which is tailored to adults. Moreover, both studies suffer from panel dropout, especially of those with lower education and skills [@martin2020]. Although we used weights to remedy the potential bias, future studies should investigate the extent to which selectivity may still bias results. 
 Finally, it is interesting to note that in NEPS, the age differences suggested by the cross-sectional age profiles mostly exceeded these longitudinal mean-level changes. For example, literacy dropped by almost $-1 \ SD$ between age 40 and age 60 according to the cross-sectional age differences in $T_1$ numeracy (see Figure\ \@ref(fig:figureS1); the mean difference in numeracy skills between the youngest (24--34 years) and oldest (55+ years) age groups amounted to $`r age_diffs %>% filter(target == "math_neps") %>% pluck("young_old") %>% printnum()` \ SD$. As shown in Table\ \@ref(tab:tableS2), numeracy in NEPS changed at an average rate of $`r age_effects %>% filter(Change == "Per decade (SD)") %>% select("Numeracy (NEPS)")` \ SD$ per decade of life (`r age_effects %>% filter(Change == "Per period (SD)") %>% select("Numeracy (NEPS)")` *SD* for the six-year study period). These numbers are larger than the six-year mean-level changes estimated from the longitudinal data. The situation was similar for literacy in NEPS. By contrast, in PIAAC-L, the cross-sectional age differences were close to longitudinal mean-level change. There are some indications from prior research that repeated participation in cognitive assessments (retest effects) may bias stability estimates -- and that, for this reason, cross-sectional age profiles can sometimes capture age effects on cognitive skills more accurately [@salthouse2019]. The extent to which this applies in modern cognitive assessments in which only a subset of items are repeatedly administered (i.e., the "anchor items") is unclear. Further research is needed to pinpoint the reasons behind the divergences of the cross-sectional age profiles and longitudinal mean-level changes in NEPS.
 
 ## Conclusion
 Taken together, our analyses in two longitudinal large-scale assessment surveys suggest that adults' literacy and numeracy skills are not set like plaster. Despite their substantial heritability [for a meta-analysis,  for a meta-analysis on literacy, see @andreola2020], skills show lifelong plasticity. Whereas skills changed very little on average, the individual differences in change (i.e., the variation around the mean of the change scores) and the high but less-than perfect rank-order consistencies suggest that a substantial share of individuals do experience change in literacy and numeracy over time. This change comprised gains and losses in almost equal share, such that gains and losses canceled each other out when looking only at mean-level change. Thus, literacy and numeracy skills -- at least as measured in the PIAAC-L and NEPS assessments -- are not impervious to change even across relatively short time periods of three to six years. 
+
 \newpage
-
 # Data availability statement
-
 The data used in study are public and available upon registration from the NEPS and PIAAC/PIAAC-L websites, respectively.  
 
 Data from the National Educational Panel Study (NEPS): Starting Cohort Adults (doi:10.5157/NEPS:SC6:11.0.0) are available from https://www.neps-data.de/Data-Center/Data-and-Documentation/Start-Cohort-Adults 
 Data from PIAAC-L are available from https://www.gesis.org/en/piaac/rdc/data/piaac-longitudinal.
 
-For full transparency, the complete R code for the analyses and the manuscript is available from the first author's github repository at [blinded for review].
+For full transparency, the complete R code for the analyses and the R markdown file for the manuscript [created with the R package papaja; @aust2020] are available from the first author's github repository at [blinded for review].
 
 \newpage
-
 # Ethics statement
-All individuals involved in PIAAC-L and NEPS gave their written consent to participate in this study after they had been informed about the purposes of the project, the content covered by the questionnaire, and their right to revoke consent at any time. All data were processed in accordance with the pertinent data protection rules in order to ensure the anonymity of participants. For more information, see the project websites of NEPS and PIAAC-L.
+All individuals involved in PIAAC-L and NEPS gave their written consent to participate in this study after they had been informed about the purposes of the project, the content covered by the questionnaire, and their right to revoke consent at any time. All data were processed in accordance with the pertinent data protection rules in order to ensure the anonymity of participants. For more information, please see the project websites of NEPS and PIAAC-L.
 
 \newpage
-
 # Disclosure statement
-The authors report no  potential conflict of interests.
+The authors report no potential conflict of interest.
 
 \newpage
-
 # Funding statement
 This paper was supported by a grant by the German Research Foundation (DFG), "Stability and Change in Adult Competencies" (Grant No. LE 4001/1-1); and a grant by the Germany Federal Ministry of Education and Research (BMBF), "Risk and protective factors for the development of low literacy and numeracy in German adults" (Grant No. W143700A). 
 
 \newpage
-
 # References
 
 \begingroup
@@ -304,5 +287,5 @@ This paper was supported by a grant by the German Research Foundation (DFG), "St
 \setlength{\leftskip}{0.5in}
 
 <div id="refs" custom-style="Bibliography"></div>
-
 \endgroup
+

@@ -103,16 +103,16 @@ plot_theme <-
       face = "bold"
     ),
     legend.background = element_rect(linetype = "solid"),
-    legend.position =  "top",
-   # plot.margin = margin(1, 1, 5, 1),
+    legend.position = "top",
+    # plot.margin = margin(1, 1, 5, 1),
     strip.background = element_blank(),
     strip.placement = "outside",
     strip.text.y = element_text(
       size = 8
     ),
-     panel.spacing = unit(0.3, "lines"),
-     axis.text.x = element_text(
-      #angle = 90,
+    panel.spacing = unit(0.3, "lines"),
+    axis.text.x = element_text(
+      # angle = 90,
       hjust = 0.5,
       vjust = 0.5,
       size = 8
@@ -121,7 +121,7 @@ plot_theme <-
       hjust = 0.5,
       vjust = 0.5,
       size = 8,
-     # angle = 90,
+      # angle = 90,
     ),
     axis.title.y = element_blank(),
     axis.title.x = element_text(
@@ -195,8 +195,8 @@ deltas_plot <- cowplot::plot_grid(
 
 
 ggsave("deltas.pdf",
-       device = "pdf", plot = deltas_plot,
-       width = 22, height = 15, unit = "cm"
+  device = "pdf", plot = deltas_plot,
+  width = 22, height = 15, unit = "cm"
 )
 
 
@@ -214,7 +214,7 @@ cors_plotter <- function(study) {
       color = Domain, shape = Domain
     )) +
     geom_pointrange(aes(ymin = lower, ymax = upper),
-      position = dodge1, 
+      position = dodge1,
       size = 0.25
     ) +
     geom_text(aes(label = sprintf("%.2f", rho)),
@@ -456,7 +456,7 @@ cors_t1_delta <- cors_t1_delta %>%
 sd_pooler <- function(data) {
   sd <- get(data) %>%
     group_by(.imp) %>%
-    summarise(SD = 0.5 * (sd(t1_pv) + sd(t2_pv)) ) %>%
+    summarise(SD = 0.5 * (sd(t1_pv) + sd(t2_pv))) %>%
     summarise(SD = mean(SD)) %>%
     unlist()
   sd
@@ -552,32 +552,3 @@ age_effects <- bind_cols(
   mutate(across(where(is.numeric), printnum)) %>%
   arrange(rev(Change))
 
-# Biplots of T1 and T2 ----------------------------------------------------
-
-
-pointplot <- function(data) {
-
-  domain <- if_else(grepl("reading", data), 
-                    "Literacy", 
-                    "Numeracy")
-  
-  y_lab <- str_c(domain, "skills at T2")
-  x_lab <- str_c(domain, "skills at T1")
-  
-  plotdata <- get(data) %>% 
-    mutate(PV = as_factor(.imp)) %>% 
-    filter(.imp < 5)
-  
-  pointplot <- plotdata %>%
-    ggplot(aes(y = t2_pv, x = t1_pv, color = PV)) +
-    geom_point() +
-    #  geom_abline() +
-    scale_color_discrete("PV Number") +
-    theme_apa() +
-    ylab(y_lab)
-    xlab(x_lab)
-    
-    pointplot
-}
-
-pointplot("math_neps")

@@ -46,8 +46,8 @@ cors_t1_delta <- cors_t1_delta %>%
   unnest(ergebnis) %>%
   mutate(
     domain = str_extract(target, pattern = "reading|math"),
-    study = str_extract(target, pattern = "neps|piaac"), 
-    CI = str_c("[", round(lower,2),"; ", round(upper, 2), "]")
+    study = str_extract(target, pattern = "neps|piaac"),
+    CI = str_c("[", round(lower, 2), "; ", round(upper, 2), "]")
   )
 
 # Combine descriptive statistics about change in a reduced and formatted table
@@ -97,30 +97,33 @@ apa_table(skills_descriptives,
 
 ```{r tableS2, echo = F, warning = F}
 # Table is sourced from 04_reporting.R
-#source("04_reporting.R")
+# source("04_reporting.R")
 
-age_effects %>% 
-    mutate(Change = str_replace_all(Change,
-                                    "SD", 
-                                    "\\\\emph{SD}")) %>%
-rename("Linear age effect" = Change) %>%
-apa_table(
-  col.names = c("Linear age effect", rep(c("Literacy", "Numeracy"), 2)),
-  col_spanners =
-    list("PIAAC-L" = c(2, 3),
-         "NEPS" = c(4, 5)),
-  stub_indents = list(
-    "For one year" = c(1:2),
-    "For the study period" = c(3:4),
-    "For one decade" = c(5:6)
-  ),
-  escape = F,
-  caption = "(ref:tableS2-caption)",
-  align = "lcccc",
-  font_size = "small",
-  note = "Cross-sectional age differences in skills  estimated from a linear model regressing $T_1$ skill level on age. The study period was three years in PIAAC-L and six years in NEPS. \"$SD$\" refers to change expressed in pooled standard deviations of the respective skill. All estimates are pooled across the 10 (20 in NEPS) PVs." 
-)
-
+age_effects %>%
+  mutate(Change = str_replace_all(
+    Change,
+    "SD",
+    "\\\\emph{SD}"
+  )) %>%
+  rename("Linear age effect" = Change) %>%
+  apa_table(
+    col.names = c("Linear age effect", rep(c("Literacy", "Numeracy"), 2)),
+    col_spanners =
+      list(
+        "PIAAC-L" = c(2, 3),
+        "NEPS" = c(4, 5)
+      ),
+    stub_indents = list(
+      "For one year" = c(1:2),
+      "For the study period" = c(3:4),
+      "For one decade" = c(5:6)
+    ),
+    escape = F,
+    caption = "(ref:tableS2-caption)",
+    align = "lcccc",
+    font_size = "small",
+    note = "Cross-sectional age differences in skills  estimated from a linear model regressing $T_1$ skill level on age. The study period was three years in PIAAC-L and six years in NEPS. \"$SD$\" refers to change expressed in pooled standard deviations of the respective skill. All estimates are pooled across the 10 (20 in NEPS) PVs."
+  )
 ```
 
 \newpage
@@ -147,23 +150,25 @@ ageplot <- function(data) {
   domain <- if_else(grepl("reading", data), "Literacy", "Numeracy")
 
   plotlims <- list(
-  upper = ifelse(grepl("piaac", data),
-        300, 1),
-  lower = ifelse(grepl("piaac", data),
-        250,
-        -1)
+    upper = ifelse(grepl("piaac", data),
+      300, 1
+    ),
+    lower = ifelse(grepl("piaac", data),
+      250,
+      -1
     )
-  
+  )
+
   # Plot the age profile based on the first PV
   ageplot <- plotdata %>%
     filter(.imp == 1) %>%
     ggplot(aes(x = age, y = t1_pv)) +
     expand_limits(
-       y = c(plotlims$lower, plotlims$upper),
+      y = c(plotlims$lower, plotlims$upper),
       x = c(18, 67)
     ) +
     geom_smooth(
-      #span = 0.1, level = 0.95, 
+      # span = 0.1, level = 0.95,
       fill = "#005B96", color = "#005B96"
     ) +
 
@@ -196,14 +201,13 @@ plot_grid(
   ageplot("math_piaac"),
   ageplot("math_neps"),
   labels = c(
-    "Literacy (PIAAC-L)", "Literacy (NEPS)", 
-     "Numeracy (PIAAC-L)", "Numeracy (NEPS)"
+    "Literacy (PIAAC-L)", "Literacy (NEPS)",
+    "Numeracy (PIAAC-L)", "Numeracy (NEPS)"
   ),
   label_size = 12,
   label_fontfamily = "Source Sans Pro",
   label_y = 1
 )
-
 ```
 
 \newpage
@@ -213,38 +217,37 @@ plot_grid(
 ```{r figureS2, echo = FALSE, warning = FALSE, fig.dim = c(8,7), fig.cap = "(ref:figureS2-caption)"}
 
 delta_density <- function(data) {
-  
   data <- get(data)
   # Compute sd at T1 (for computation of Cohen's dav and for coloring the plot)
   require(radiant.data)
-  
+
   sds <- data %>%
     group_by(.imp) %>%
     summarise(
       sd_pooled = 0.5 * (weighted.sd(t1_pv, weight) +
-                           weighted.sd(t2_pv, weight)),
+        weighted.sd(t2_pv, weight)),
       sd_delta = weighted.sd(t2_pv - t1_pv, weight)
     ) %>%
     summarise(sd_pooled = mean(sd_pooled), sd_delta = mean(sd_delta))
-  
+
   # Compute deltas (t2-t1) based on the EAP scores
-  plotdata <- data %>% ungroup %>%
+  plotdata <- data %>% ungroup() %>%
     # group_by(seqid) %>%
     mutate(delta = t1_pv - t2_pv)
-    
-    # Compute densities for each delta value and categorize them according to  whether they exeed a "large" effect.
+
+  # Compute densities for each delta value and categorize them according to  whether they exeed a "large" effect.
   plotdata <- with(density(plotdata$delta), tibble(x, y)) %>%
     mutate(
       direction = ifelse(x <= -0.8 * sds[["sd_pooled"]], "neg",
-                         ifelse(x >= 0.8 * sds[["sd_pooled"]], "pos", "little")
+        ifelse(x >= 0.8 * sds[["sd_pooled"]], "pos", "little")
       )
     )
-  
+
   # Create a density plot
- plotted <- plotdata %>% ggplot(aes(x = x, y = y)) +
+  plotted <- plotdata %>% ggplot(aes(x = x, y = y)) +
     geom_area(aes(fill = direction),
-              alpha = 1,
-              show.legend = F
+      alpha = 1,
+      show.legend = F
     ) +
     geom_vline(
       xintercept = 0,
@@ -264,9 +267,8 @@ delta_density <- function(data) {
     ) +
     scale_fill_manual(values = c("#BDCDD8", "#005B96", "#005B96")) +
     expand_limits(x = c(-2 * sds$sd_pooled, 2 * sds$sd_pooled))
-  
- return(plotted)
- 
+
+  return(plotted)
 }
 
 plot_grid(
@@ -274,13 +276,83 @@ plot_grid(
   delta_density("reading_neps"),
   delta_density("math_piaac"),
   delta_density("math_neps"),
-   labels = c(
-    "Literacy (PIAAC-L)", "Literacy (NEPS)", 
-     "Numeracy (PIAAC-L)", "Numeracy (NEPS)"
+  labels = c(
+    "Literacy (PIAAC-L)", "Literacy (NEPS)",
+    "Numeracy (PIAAC-L)", "Numeracy (NEPS)"
   ),
   label_size = 12,
   label_fontfamily = "Source Sans Pro",
   label_y = 1
+)
+```
+
+\newpage
+
+(ref:figureS3-caption) Scatterplots of literacy and numeracy skills at the two time points. For better legibility, the plot shows data only from the first five plausible values (PV). Axes are in the original metrics of the PIAAC (0–500 points) and NEPS tests (logits), respectively. The lines show the linear correlation coefficient $r_{T_1, T_2}$ based on each of the five PVs.
+
+```{r figureS3, echo = FALSE, warning = FALSE, fig.dim = c(9,7), fig.cap = "(ref:figureS3-caption)"}
+
+point_plotter <- function(data) {
+  y_lab <- if_else(grepl("reading", data),
+    expression(paste("Literacy skills at  ", T[2])),
+    expression(paste("Numeracy skills at  ", T[2]))
+  )
+  x_lab <- if_else(grepl("reading", data),
+    expression(paste("Literacy skills at  ", T[1])),
+    expression(paste("Numeracy skills at  ", T[1]))
   )
 
+  plotlims <- c(
+    ifelse(grepl("piaac", data),
+      500, 4
+    ),
+    ifelse(grepl("piaac", data),
+      0,
+      -4
+    )
+  )
+
+  plotdata <- get(data) %>%
+    filter(.imp < 6) %>%
+    mutate(PV = as_factor(.imp)) 
+
+  pointplot <- plotdata %>%
+    ggplot(aes(
+      y = t2_pv, x = t1_pv,
+      group = PV, color = PV, fill = PV
+    )) +
+    geom_point(size = 0.1) +
+    geom_smooth(method = "lm", se = FALSE,
+                size = 0.2) +
+    scale_color_brewer("PV", palette = "Blues") +
+    scale_fill_brewer("PV", palette = "Blues") +
+    theme_apa() +
+    expand_limits(y = plotlims, x = plotlims) +
+    ylab(y_lab) +
+    xlab(x_lab) +
+    theme(
+      text = element_text(family = "Source Sans Pro",
+                          size = 10),
+      axis.title = element_text(size = 10),
+      axis.text = element_text(size = 10),
+      plot.margin = margin(1, 0.5, 0.5, 0.5, "cm")
+    )
+
+  pointplot
+}
+
+points_plot <- cowplot::plot_grid(
+  point_plotter("reading_piaac"),
+  point_plotter("reading_neps"),
+  point_plotter("math_piaac"),
+  point_plotter("math_neps"),
+  nrow = 2,
+  labels = c("Three years (PIAAC-L)", "Six years (NEPS)"),
+  align = "h",
+  hjust = -0.1,
+  label_fontfamily = "Source Sans Pro",
+  label_size = 12
+)
+
+points_plot
 ```

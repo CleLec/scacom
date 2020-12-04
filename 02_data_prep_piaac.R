@@ -64,13 +64,18 @@ piaacl <- piaac12 %>%
   filter(!is.na(PVLIT1_12_15) & !is.na(PVLIT1_15_15) &
            age >= 18)  %>%
   mutate(weight = weight12 * bleib_15 / mean(weight12 * bleib_15), #normalize wt
-         agegr = if_else(age <= 34, 0,
-                         if_else(age > 34 & age <= 44, 1,
-                                 if_else(age > 44 & age <= 54, 2, 3)
-                         )),
-         edugr = ifelse(edu %in% c(1:6), 0,
-                        ifelse(edu %in% c(7:11), 1,
-                                ifelse(edu %in% c(12:14), 2, NA))))
+         agegr = case_when(
+           age <= 34 ~ 0,
+           age > 34 & age <= 44 ~ 1,
+           age > 44 & age <= 54 ~ 2, 
+           age > 54 ~ 3
+           ),
+         edugr = case_when(
+                  edu %in% c(1:6) ~ 0,
+                  edu %in% c(7:11) ~ 1,
+                  edu %in% c(12:14) ~ 2, 
+                  TRUE ~ NA_real_))
+
 psych::describe(piaacl$weight)
 rm(list = c("piaac12", "piaacl15", "weights15"))
 # Reshape the data such that
