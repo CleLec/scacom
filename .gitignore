@@ -9,4 +9,6 @@
 *.tex
 *.out
 *.ent
-
+*.ttt
+*.fff
+*.log
