@@ -1,8 +1,8 @@
 # Project Info: ----------------------------------------------------------------
-# Lechner et al. (2020). Stability and Change in Literacy and Numeracy
+# Stability and Change in Adults' Literacy and Numeracy
 # Step 1: Data preparation
-# This code was written by clemens.lechner@gesis.org
-# R 4.0.2
+# This code was written by [blinded for review]
+# R 4.0.3
 
 # Basic settings ---------------------------------------------------------------
 rm(list= ls())

@@ -288,8 +288,3 @@ This paper was supported by a grant by the German Research Foundation (DFG), "St
 \endgroup
 
 
-
-```{r echo = FALSE, results = 'asis', cache = FALSE}
-papaja::render_appendix('appendix.Rmd')
-```
-
