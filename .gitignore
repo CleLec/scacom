@@ -12,3 +12,5 @@
 *.ttt
 *.fff
 *.log
+renv/library
+02_results

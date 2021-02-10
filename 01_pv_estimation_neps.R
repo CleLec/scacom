@@ -13,7 +13,9 @@ dirs <- list(
   results = "./02_results"
 )
 
-#setwd(dirs$main)
+# Version control with renv (run unce)
+# renv::init()
+# renv::snapshot()
 
 # Load required packages
 pckloader <- function(pcklist) {
