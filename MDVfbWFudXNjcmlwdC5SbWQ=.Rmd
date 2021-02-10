@@ -46,7 +46,7 @@ authornote: |
   The authors thank William Thorn (OECD) for helpful comments on an earlier version of this investigation.
 
 abstract: |
- We investigated individual differences in the development of literacy (reading competence) and numeracy (mathematical competence) during adulthood. Using data from two large-scale multi-wave studies (PIAAC-L, *N* = 1,775; NEPS, *N* = 3,087), we examined how mean-level change ($\Delta{T_1,T_2}$) and rank-order consistencies ($r_{T_1,T_2}$) of literacy and numeracy over three to six years are distributed in the total adult population and in sociodemographic subgroups defined by age, gender, and education. To account for measurement error, we employed plausible values (PV) methodology. Results revealed that literacy and numeracy are highly but not perfectly rank-order stable ($.66 \leq r \leq .83$). Mean-level change was negligible for both skills and studies, but there were considerable individual differences in change. We found some evidence for moderate skill gains during young adulthood (18--29 years) and losses in old age (55+ years), resembling age profiles from cross-sectional studies. However, subgroup differences in change by age group, gender, and education were mostly small and did not replicate across studies. Our findings suggest that adults' literacy and numeracy are not set in stone but can change even over relatively short time periods. They can serve as a benchmark against which to compare future longitudinal findings.
+  We investigated individual differences in the development of literacy (reading competence) and numeracy (mathematical competence) during adulthood. Using data from two large-scale multi-wave studies (PIAAC-L, *N* = 1,775; NEPS, *N* = 3,087), we examined how mean-level change ($\Delta{T_1,T_2}$) and rank-order consistencies ($r_{T_1,T_2}$) of literacy and numeracy over three to six years are distributed in the total adult population and in sociodemographic subgroups defined by age, gender, and education. To account for measurement error, we employed plausible values (PV) methodology. Results revealed that literacy and numeracy are highly but not perfectly rank-order stable ($.66 \leq r \leq .83$). Mean-level change was negligible for both skills and studies, but there were considerable individual differences in change. We found some evidence for moderate skill gains during young adulthood (18--29 years) and losses in old age (55+ years), resembling age profiles from cross-sectional studies. However, subgroup differences in change by age group, gender, and education were mostly small and did not replicate across studies. Our findings suggests that adults' literacy and numeracy are not set in stone but can change even over relatively short time periods. They can serve as a benchmark against which to compare future longitudinal findings.
  
  
 keywords          : "literacy, numeracy, intelligence, development, adulthood, longitudinal"
@@ -277,8 +277,3 @@ For full transparency, the complete R code for the analyses and the R markdown f
 \setlength{\parindent}{0in}
 <div id="refs" custom-style="Bibliography"></div>
 \endgroup
-
-```{r echo = FALSE, results = 'asis', cache = FALSE}
-papaja::render_appendix('appendix.Rmd')
-```
-
